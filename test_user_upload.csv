@@ -1,0 +1,5 @@
+﻿timestamp,asset_id,asset_type,temperature,vibration,current,power_output,voltage,wind_speed,wind_direction,solar_irradiance,panel_soiling,humidity,expected_power,status
+2026-09-11 10:00,WT-004,wind,48.2,2.1,38.4,91.0,415,8.4,185,,,58,96.0,normal
+2026-09-11 10:05,WT-004,wind,48.5,2.1,38.0,91.2,415,8.5,186,,,57,96.0,normal
+2026-09-11 10:00,SP-001,solar,44.5,0.35,41.8,94.5,400,,,820,12.5,42,98.0,normal
+2026-09-11 10:00,WT-009,wind,48.1,2.0,38.2,92.0,415,8.3,184,,,58,96.0,normal
