@@ -90,7 +90,7 @@ export const api = {
   },
 
   // Maintenance
-  getPriorities: async (scope: 'all' | 'reporting' = 'reporting'): Promise<PriorityQueueItem[]> => {
+  getPriorities: async (scope: 'all' | 'reporting' = 'all'): Promise<PriorityQueueItem[]> => {
     const res = await fetch(`${API_BASE}/maintenance/priorities?scope=${scope}`);
     if (!res.ok) throw new Error('Failed to fetch maintenance priorities');
     return res.json();

@@ -29,10 +29,7 @@ from app.services.alert_service import alert_service
 router = APIRouter()
 
 # Global state tracking most recent CSV telemetry batch assets
-LAST_CSV_UPLOADED_ASSET_CODES = [
-    "WT-101", "WT-102", "WT-103", "WT-104", "WT-105", "WT-106",
-    "SP-201", "SP-202", "SP-203", "SP-204", "SP-205", "SP-206"
-]
+LAST_CSV_UPLOADED_ASSET_CODES: List[str] = []
 
 # --- Auth ---
 @router.post("/auth/register", response_model=Token)
@@ -544,9 +541,9 @@ def get_maintenance_priorities(
     db: Session = Depends(get_db)
 ):
     all_assets = db.query(Asset).all()
-    reporting_codes = LAST_CSV_UPLOADED_ASSET_CODES if LAST_CSV_UPLOADED_ASSET_CODES else [a.asset_code for a in all_assets]
-    if scope == "reporting" and reporting_codes:
-        assets = [a for a in all_assets if a.asset_code in reporting_codes]
+    if scope == "reporting" and LAST_CSV_UPLOADED_ASSET_CODES:
+        matching = [a for a in all_assets if a.asset_code in LAST_CSV_UPLOADED_ASSET_CODES]
+        assets = matching if matching else all_assets
     else:
         assets = all_assets
 
@@ -1471,7 +1468,8 @@ def get_fleet_diagnostics(
 ):
     all_assets = db.query(Asset).all()
     if scope == "reporting" and LAST_CSV_UPLOADED_ASSET_CODES:
-        assets = [a for a in all_assets if a.asset_code in LAST_CSV_UPLOADED_ASSET_CODES]
+        matching = [a for a in all_assets if a.asset_code in LAST_CSV_UPLOADED_ASSET_CODES]
+        assets = matching if matching else all_assets
     else:
         assets = all_assets
     return [_build_asset_diagnostics(a, db) for a in assets]
