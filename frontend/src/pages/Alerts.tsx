@@ -94,7 +94,7 @@ export const Alerts: React.FC = () => {
                 <div className="flex items-center gap-1.5 text-slate-500 text-xs font-bold mb-2">
                   <AlertTriangle className="w-3.5 h-3.5 text-orange-500" /> High Risk
                 </div>
-                <div className="text-3xl font-black text-slate-900">{alerts.filter(a => a.severity === 'HIGH').length || 5}</div>
+                <div className="text-3xl font-black text-slate-900">{alerts.filter(a => a.severity === 'WARNING').length || 5}</div>
               </div>
               <div className="light-card p-4">
                 <div className="flex items-center gap-1.5 text-slate-500 text-xs font-bold mb-2">

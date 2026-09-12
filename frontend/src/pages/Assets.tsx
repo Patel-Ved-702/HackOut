@@ -46,7 +46,7 @@ export const Assets: React.FC = () => {
       watch: assets.filter(a => a.status === 'WATCH').length,
       highRisk: assets.filter(a => a.status === 'HIGH RISK').length,
       critical: assets.filter(a => a.status === 'CRITICAL').length,
-      stale: assets.filter(a => a.status === 'STALE').length, // mock stale
+      stale: assets.filter(a => a.status === 'DATA_STALE').length, // mock stale
     };
   };
 
