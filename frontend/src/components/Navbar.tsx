@@ -91,12 +91,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             <NavLink to="/settings" className="flex items-center gap-3 pl-4 border-l border-slate-200 hover:opacity-80 transition-opacity cursor-pointer">
-              <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 text-sm">
-                OP
+              <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center font-bold text-emerald-700 text-sm">
+                {currentUser.name
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .toUpperCase()
+                  .slice(0, 2)}
               </div>
               <div className="text-left hidden sm:block leading-tight">
-                <div className="text-sm font-bold text-slate-800">Operator Portal</div>
-                <div className="text-[10px] text-slate-500 font-medium">Fleet Control Center</div>
+                <div className="text-sm font-bold text-slate-800">{currentUser.name}</div>
+                <div className="text-[10px] text-slate-500 font-medium capitalize">{currentUser.role}</div>
               </div>
             </NavLink>
           </div>

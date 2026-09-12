@@ -1,13 +1,61 @@
 import React, { useState } from 'react';
 import { User, Bell, Shield, Sliders, Moon, Globe, HelpCircle, LogOut, Upload, CheckCircle2, Save } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { User as UserType } from '../types';
 
-export const Settings: React.FC = () => {
+interface SettingsProps {
+  currentUser?: UserType;
+  onUserUpdate?: (user: UserType) => void;
+}
+
+export const Settings: React.FC<SettingsProps> = ({ currentUser: propUser, onUserUpdate }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'profile' | 'preferences' | 'notifications' | 'security'>('profile');
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Load logged-in user from prop or localStorage
+  const storedUser: UserType | null = (() => {
+    if (propUser && propUser.email) return propUser;
+    try {
+      const s = localStorage.getItem('current_user');
+      return s ? JSON.parse(s) : null;
+    } catch { return null; }
+  })();
+
+  const nameParts = (storedUser?.name || propUser?.name || '').split(' ');
+  const [firstName, setFirstName] = useState(nameParts[0] ?? '');
+  const [lastName, setLastName] = useState(nameParts.slice(1).join(' ') ?? '');
+  const [emailVal, setEmailVal] = useState(storedUser?.email || propUser?.email || '');
+  const [roleVal, setRoleVal] = useState(storedUser?.role || propUser?.role || 'operator');
+
+  // Keep state in sync if prop changes
+  React.useEffect(() => {
+    const effectiveUser = storedUser || propUser;
+    if (effectiveUser) {
+      const parts = (effectiveUser.name || '').split(' ');
+      setFirstName(parts[0] || '');
+      setLastName(parts.slice(1).join(' ') || '');
+      setEmailVal(effectiveUser.email || '');
+      setRoleVal(effectiveUser.role || 'operator');
+    }
+  }, [propUser?.email, propUser?.name]);
+
+  const initials = (firstName[0] ?? '') + (lastName[0] ?? '') || ((storedUser?.name || propUser?.name)?.[0] ?? '?');
+
+  const handleSaveProfile = () => {
+    const targetUser = storedUser || propUser;
+    if (targetUser) {
+      const updated = { ...targetUser, name: `${firstName} ${lastName}`.trim(), email: emailVal };
+      localStorage.setItem('current_user', JSON.stringify(updated));
+      if (onUserUpdate) onUserUpdate(updated);
+    }
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 2500);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('current_user');
     window.location.href = '/';
   };
 
@@ -84,8 +132,8 @@ export const Settings: React.FC = () => {
                 <h2 className="text-xl font-black text-slate-900 mb-6">Personal Profile</h2>
                 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8">
-                  <div className="w-24 h-24 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-3xl font-black text-slate-400">
-                    JD
+                  <div className="w-24 h-24 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-3xl font-black text-emerald-700 uppercase">
+                    {initials}
                   </div>
                   <div className="space-y-3">
                     <div className="flex gap-3">
@@ -103,24 +151,29 @@ export const Settings: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">First Name</label>
-                    <input type="text" defaultValue="John" className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" />
+                    <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm font-bold text-black focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Last Name</label>
-                    <input type="text" defaultValue="Doe" className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" />
+                    <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm font-bold text-black focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" />
                   </div>
                   <div className="space-y-1.5 sm:col-span-2">
                     <label className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Email Address</label>
-                    <input type="email" defaultValue="demo@renewguard.io" className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" />
+                    <input type="email" value={emailVal} onChange={(e) => setEmailVal(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm font-bold text-black focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" />
                   </div>
                   <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Role / Title</label>
-                    <input type="text" defaultValue="Senior Reliability Engineer" className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" />
+                    <label className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Role</label>
+                    <input type="text" value={roleVal} readOnly className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-100 text-sm font-bold text-slate-700 cursor-not-allowed capitalize" />
                   </div>
                 </div>
               </div>
-              <div className="bg-slate-50 p-6 flex justify-end">
-                <button className="px-6 py-2.5 rounded-xl bg-emerald-700 text-white font-bold text-sm shadow-md hover:bg-emerald-800 transition-colors flex items-center gap-2">
+              <div className="bg-slate-50 p-6 flex items-center justify-end gap-3">
+                {saveSuccess && (
+                  <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                    <CheckCircle2 className="w-4 h-4" /> Saved!
+                  </span>
+                )}
+                <button onClick={handleSaveProfile} className="px-6 py-2.5 rounded-xl bg-emerald-700 text-white font-bold text-sm shadow-md hover:bg-emerald-800 transition-colors flex items-center gap-2">
                   <Save className="w-4 h-4" /> Save Changes
                 </button>
               </div>

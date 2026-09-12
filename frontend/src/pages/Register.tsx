@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Leaf, Zap, ShieldCheck, EyeOff, Eye, ArrowRight } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { api } from '../services/api';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -9,13 +10,24 @@ export const Register: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate authentication
-    localStorage.setItem('auth_token', 'mock_token');
-    // Force a full browser navigation to root to ensure App.tsx picks up the token
-    window.location.href = '/';
+    setError(null);
+    setLoading(true);
+    try {
+      const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+      const data = await api.register(fullName, email, password);
+      localStorage.setItem('auth_token', data.access_token);
+      localStorage.setItem('current_user', JSON.stringify(data.user));
+      window.location.href = '/';
+    } catch (err: any) {
+      setError(err.message || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -84,7 +96,7 @@ export const Register: React.FC = () => {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="John"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-black text-sm placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-black focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   required
                 />
               </div>
@@ -95,7 +107,7 @@ export const Register: React.FC = () => {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Doe"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-black text-sm placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-black focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   required
                 />
               </div>
@@ -109,7 +121,7 @@ export const Register: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-black text-sm placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-black focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   required
                 />
                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-sm border border-slate-400 text-slate-400 flex items-center justify-center text-[10px] font-bold">@</div>
@@ -124,7 +136,7 @@ export const Register: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create a strong password"
-                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-slate-200 bg-slate-50 text-black text-sm placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-black focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   required
                   minLength={8}
                 />
@@ -144,10 +156,15 @@ export const Register: React.FC = () => {
 
             <button 
               type="submit"
-              className="w-full py-3.5 mt-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow-xl shadow-emerald-900/10 transition-all flex items-center justify-center gap-2"
+              disabled={loading}
+              className="w-full py-3.5 mt-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm shadow-xl shadow-emerald-900/10 transition-all flex items-center justify-center gap-2"
             >
-              Create Account <ArrowRight className="w-4 h-4" />
+              {loading ? 'Creating Account…' : <> Create Account <ArrowRight className="w-4 h-4" /></>}
             </button>
+
+            {error && (
+              <p className="mt-3 text-xs font-bold text-rose-600 text-center">{error}</p>
+            )}
           </form>
 
           <p className="mt-8 text-center text-xs font-bold text-slate-500">

@@ -26,11 +26,17 @@ export const App: React.FC = () => {
     !!localStorage.getItem('auth_token')
   );
 
-  const [currentUser, setCurrentUser] = useState<User>({
-    id: 1,
-    name: 'Sarah Operator',
-    email: 'operator@renewguard.io',
-    role: 'operator',
+  const [currentUser, setCurrentUser] = useState<User>(() => {
+    try {
+      const stored = localStorage.getItem('current_user');
+      if (stored) return JSON.parse(stored) as User;
+    } catch {}
+    return {
+      id: 1,
+      name: 'Operator',
+      email: '',
+      role: 'operator',
+    };
   });
 
   const navigate = useNavigate();
@@ -54,6 +60,7 @@ export const App: React.FC = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('current_user');
     setIsAuthenticated(false);
     navigate('/');
   };
@@ -96,7 +103,7 @@ export const App: React.FC = () => {
           <Route path="/assets/:id" element={<AssetDetails />} />
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/maintenance" element={<Maintenance />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/settings" element={<Settings currentUser={currentUser} onUserUpdate={setCurrentUser} />} />
           <Route path="/technician" element={<Technician />} />
           
           {/* Protected Super Admin Route */}
