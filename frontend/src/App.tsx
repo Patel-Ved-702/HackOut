@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Dashboard } from './pages/Dashboard';
 import { Assets } from './pages/Assets';
@@ -7,6 +7,10 @@ import { AssetDetails } from './pages/AssetDetails';
 import { Alerts } from './pages/Alerts';
 import { Maintenance } from './pages/Maintenance';
 import { Technician } from './pages/Technician';
+import { Settings } from './pages/Settings';
+import { Landing } from './pages/Landing';
+import { Login } from './pages/Login';
+import { Register } from './pages/Register';
 import { CsvUploadModal } from './components/CsvUploadModal';
 import { User } from './types';
 import { api } from './services/api';
@@ -15,6 +19,11 @@ export const App: React.FC = () => {
   const [alertCount, setAlertCount] = useState<number>(0);
   const [isCsvModalOpen, setIsCsvModalOpen] = useState<boolean>(false);
   const [refreshKey, setRefreshKey] = useState<number>(0);
+  
+  // Check auth state
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
+    !!localStorage.getItem('auth_token')
+  );
 
   const [currentUser, setCurrentUser] = useState<User>({
     id: 1,
@@ -23,8 +32,11 @@ export const App: React.FC = () => {
     role: 'operator',
   });
 
-  // Periodically refresh active alert count
+  const navigate = useNavigate();
+
+  // Periodically refresh active alert count (only if authenticated)
   const refreshAlertCount = async () => {
+    if (!isAuthenticated) return;
     try {
       const alerts = await api.getAlerts('active');
       setAlertCount(alerts.length);
@@ -37,8 +49,27 @@ export const App: React.FC = () => {
     refreshAlertCount();
     const interval = setInterval(refreshAlertCount, 6000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isAuthenticated]);
 
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+    setIsAuthenticated(false);
+    navigate('/');
+  };
+
+  // If not authenticated, render public routes
+  if (!isAuthenticated) {
+    return (
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    );
+  }
+
+  // If authenticated, render application structure
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       <Navbar
@@ -64,12 +95,21 @@ export const App: React.FC = () => {
           <Route path="/assets/:id" element={<AssetDetails />} />
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/maintenance" element={<Maintenance />} />
-          <Route path="/settings" element={<Technician />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/technician" element={<Technician />} />
+          {/* Catch-all for authenticated users */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
-        RenewGuard AI • HackOut'26 Predictive Maintenance Platform • Wind & Solar Asset Intelligence
+      <footer className="border-t border-slate-200 bg-white py-4 flex items-center justify-center gap-4 text-xs text-slate-500">
+        <span>RenewGuard AI • Predictive Maintenance Platform</span>
+        <button 
+          onClick={handleLogout}
+          className="text-slate-400 hover:text-rose-500 font-medium transition-colors"
+        >
+          Sign Out
+        </button>
       </footer>
     </div>
   );

@@ -65,25 +65,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               Work Orders
             </NavLink>
-
-            <NavLink
-              to="/settings"
-              className={({ isActive }) => `pb-1 transition-colors ${isActive ? 'text-slate-900 border-b-2 border-slate-900' : 'hover:text-slate-900'}`}
-            >
-              Settings
-            </NavLink>
           </nav>
 
           {/* Right Side Info */}
           <div className="flex items-center gap-4">
-            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
-              Telemetry: Live (Edge-Connected)
-            </div>
 
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-100 text-slate-500 text-xs font-mono">
-              <Activity className="w-3.5 h-3.5" />
-              <span>Synced: <br/><strong>02:52:56</strong></span>
-            </div>
+
+
 
             <button 
               onClick={onOpenUploadCsv}
@@ -93,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               Upload CSV
             </button>
 
-            <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
+            <NavLink to="/settings" className="flex items-center gap-3 pl-4 border-l border-slate-200 hover:opacity-80 transition-opacity cursor-pointer">
               <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 text-sm">
                 OP
               </div>
@@ -101,7 +89,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="text-sm font-bold text-slate-800">Operator Portal</div>
                 <div className="text-[10px] text-slate-500 font-medium">Fleet Control Center</div>
               </div>
-            </div>
+            </NavLink>
           </div>
         </div>
       </div>
