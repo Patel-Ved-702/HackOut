@@ -39,10 +39,13 @@ export interface Asset {
   asset_code: string;
   site_id: number;
   site_name?: string;
+  location?: string;
   asset_type: 'wind_turbine' | 'solar_inverter';
   rated_capacity: number;
+  model?: string;
   installation_date: string;
   status: 'HEALTHY' | 'WATCH' | 'HIGH RISK' | 'CRITICAL' | 'DATA_STALE' | 'STARTUP' | 'OFFLINE' | 'STANDBY';
+  health_status?: string;
   health_score: number;
   evidence?: EvidenceItem[];
   latest_reading?: {

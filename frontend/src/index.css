@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
 @layer utilities {
   .light-card {
     @apply bg-white border border-slate-200 rounded-2xl shadow-sm;
