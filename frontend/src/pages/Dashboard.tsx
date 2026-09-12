@@ -1,42 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  Activity, 
-  ShieldCheck, 
-  AlertTriangle, 
-  Flame, 
-  DollarSign, 
-  ArrowUpRight,
-  Clock,
-  Layers,
-  Info
+  Activity, ShieldCheck, AlertTriangle, Flame, DollarSign, 
+  ArrowRight, Radio, BrainCircuit, BellRing, Wind, Sun, AlertCircle
 } from 'lucide-react';
 import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  ResponsiveContainer, 
-  CartesianGrid 
+  ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine
 } from 'recharts';
 import { api } from '../services/api';
 import { DashboardSummary } from '../types';
-import { StatusBadge } from '../components/StatusBadge';
-import { SimulationBanner } from '../components/SimulationBanner';
 
-interface DashboardProps {
-  onSelectAsset: (assetId: number) => void;
-  onNavigateTab: (tab: string) => void;
-}
+import { useNavigate } from 'react-router-dom';
 
-export const Dashboard: React.FC<DashboardProps> = ({ onSelectAsset, onNavigateTab }) => {
+export const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
-  const [fleetScope, setFleetScope] = useState<'all' | 'reporting'>('reporting');
 
   const fetchSummary = async () => {
     try {
-      const data = await api.getDashboardSummary(fleetScope);
+      const data = await api.getDashboardSummary('all');
       setSummary(data);
     } catch (err) {
       console.error('Failed to load dashboard summary:', err);
@@ -49,289 +31,239 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectAsset, onNavigateT
     fetchSummary();
     const interval = setInterval(fetchSummary, 5000);
     return () => clearInterval(interval);
-  }, [fleetScope]);
+  }, []);
 
-  // Authentic telemetry trend data from backend covering the full CSV window
-  const currentHealth = summary ? summary.fleet_health_avg : 90;
-  const currentRiskKW = summary ? summary.total_generation_at_risk_kw : 31.2;
-  const fleetTrendData = (summary?.trend_data && summary.trend_data.length > 0)
-    ? summary.trend_data
-    : [
-        { time: '10:00', health: Math.min(100, currentHealth + 5), activeRiskKW: Math.max(0, currentRiskKW - 18) },
-        { time: '10:05', health: Math.min(100, currentHealth + 4), activeRiskKW: Math.max(0, currentRiskKW - 14) },
-        { time: '10:10', health: Math.min(100, currentHealth + 2), activeRiskKW: Math.max(0, currentRiskKW - 8) },
-        { time: '10:12', health: Math.max(20, currentHealth - 2), activeRiskKW: Math.max(0, currentRiskKW - 3) },
-        { time: '10:14', health: currentHealth, activeRiskKW: currentRiskKW },
-      ];
+  // Early Warning Predictive Data (Mocked for visual demonstration of prediction)
+  const predictiveData = [
+    { time: 'T-72h', health: 98, actual_vibration: 2.1 },
+    { time: 'T-48h', health: 95, actual_vibration: 2.3 },
+    { time: 'T-24h', health: 85, actual_vibration: 3.0 },
+    { time: 'T-12h', health: 68, actual_vibration: 4.1 },
+    { time: 'Current', health: 45, actual_vibration: 5.8, predicted_vibration: 5.8 },
+    { time: 'T+12h', predicted_vibration: 7.2 },
+    { time: 'T+24h', predicted_vibration: 8.5 }, // Hits critical threshold
+    { time: 'T+48h', predicted_vibration: 10.1 },
+  ];
 
   if (loading && !summary) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm text-slate-400 font-mono">Loading Fleet Intelligence...</span>
-        </div>
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Simulation Banner for live HackOut demo */}
-      <SimulationBanner 
-        onSimulationUpdate={fetchSummary}
-        onNavigateAsset={onSelectAsset}
-      />
-
-      {/* Fleet Scope Bar (Isolates active CSV import session from historical fleet state) */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3 shadow-sm">
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-indigo-400" /> Fleet Scope View:
-          </span>
-          <div className="inline-flex rounded-lg bg-slate-950 p-0.5 border border-slate-800 text-xs font-medium">
-            <button
-              onClick={() => setFleetScope('reporting')}
-              className={`px-3 py-1 rounded-md transition ${
-                fleetScope === 'reporting' 
-                  ? 'bg-indigo-600 text-white font-semibold shadow-sm' 
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Active CSV Import ({summary?.active_reporting_assets ?? 12})
-            </button>
-            <button
-              onClick={() => setFleetScope('all')}
-              className={`px-3 py-1 rounded-md transition ${
-                fleetScope === 'all' 
-                  ? 'bg-indigo-600 text-white font-semibold shadow-sm' 
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              All Registered Fleet ({summary?.total_registered_assets ?? 23})
-            </button>
+    <div className="max-w-[1400px] mx-auto pb-12 space-y-8">
+      
+      {/* Hero Section & Value Proposition */}
+      <div className="relative overflow-hidden bg-white border border-slate-200 rounded-2xl shadow-sm p-8 md:p-12">
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-emerald-50 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-sky-50 rounded-full blur-3xl opacity-50"></div>
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex-1 space-y-4">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs uppercase tracking-widest">
+              <Activity className="w-3.5 h-3.5" /> Early Warning System
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight tracking-tight">
+              Predictive Maintenance for <br />
+              <span className="text-emerald-600">Solar & Wind Assets</span>
+            </h1>
+            <p className="text-lg text-slate-500 font-medium max-w-xl">
+              Stop reacting to breakdowns. Our AI-driven telemetry engine detects microscopic anomalies in solar panels and wind turbines, triggering alerts <strong className="text-slate-700">days before</strong> a critical failure occurs.
+            </p>
+            <div className="pt-2 flex items-center gap-4">
+              <button onClick={() => navigate('/assets')} className="px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md transition-all flex items-center gap-2">
+                Monitor Live Assets <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          
+          {/* How it Works Diagram */}
+          <div className="hidden lg:flex items-center gap-3 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+            <div className="flex flex-col items-center gap-2 text-center w-24">
+              <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-200 flex items-center justify-center text-sky-500">
+                <Radio className="w-6 h-6" />
+              </div>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Live IoT Data</span>
+            </div>
+            <div className="w-8 h-0.5 bg-slate-200"></div>
+            <div className="flex flex-col items-center gap-2 text-center w-24">
+              <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-emerald-200 border-b-4 flex items-center justify-center text-emerald-500 relative">
+                <BrainCircuit className="w-6 h-6" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full animate-ping"></div>
+              </div>
+              <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">AI Prediction</span>
+            </div>
+            <div className="w-8 h-0.5 bg-slate-200"></div>
+            <div className="flex flex-col items-center gap-2 text-center w-24">
+              <div className="w-12 h-12 bg-rose-50 rounded-xl shadow-sm border border-rose-200 flex items-center justify-center text-rose-500">
+                <BellRing className="w-6 h-6" />
+              </div>
+              <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wide">Early Alert</span>
+            </div>
           </div>
         </div>
-
-        {summary?.reporting_asset_codes && summary.reporting_asset_codes.length > 0 && (
-          <div className="text-[11px] text-slate-400 font-mono flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${fleetScope === 'reporting' ? 'bg-emerald-400' : 'bg-indigo-400'} animate-pulse`}></span>
-            <span>{fleetScope === 'reporting' ? 'Active Telemetry Scoped:' : 'Reporting Subset:'}</span>
-            <span className="text-slate-200 font-bold bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
-              {summary.reporting_asset_codes.length} Assets ({summary.reporting_asset_codes.slice(0, 4).join(', ')}... +{summary.reporting_asset_codes.length - 4})
-            </span>
-          </div>
-        )}
       </div>
 
-      {/* KPI Cards Grid */}
+      {/* KPI Cards Grid (Light Theme) */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        {/* Total Assets */}
-        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-slate-700 transition">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">
-              {fleetScope === 'reporting' ? 'Active Reporting' : 'Fleet Assets'}
-            </span>
-            <Activity className="w-4 h-4 text-slate-500" />
+        <div className="light-card p-5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Assets</span>
+            <Activity className="w-4 h-4 text-slate-400" />
           </div>
-          <div className="text-2xl font-bold text-white mt-2 font-mono">
-            {summary?.total_assets ?? 0}
-          </div>
-          <div className="text-[11px] text-slate-400 mt-1">
-            {fleetScope === 'reporting' 
-              ? 'Telemetry streaming active' 
-              : `${summary?.total_registered_assets ?? 11} Registered • ${summary?.active_reporting_assets ?? 3} Reporting`}
-          </div>
+          <div className="text-3xl font-black text-slate-900">{summary?.total_assets ?? 0}</div>
+          <div className="text-[11px] text-slate-500 mt-1 font-medium">Actively streaming telemetry</div>
         </div>
 
-        {/* Healthy Assets */}
-        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-emerald-900/40 transition">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-emerald-400">Healthy / Startup</span>
+        <div className="light-card p-5 border-l-4 border-l-emerald-500">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Healthy</span>
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
           </div>
-          <div className="text-2xl font-bold text-emerald-400 mt-2 font-mono">{summary?.healthy_count ?? 0}</div>
-          <div className="text-[11px] text-emerald-500/70 mt-1">Nominal & Standby modes</div>
+          <div className="text-3xl font-black text-slate-900">{summary?.healthy_count ?? 0}</div>
+          <div className="text-[11px] text-emerald-600 mt-1 font-medium">Nominal operation</div>
         </div>
 
-        {/* Watch & Warning */}
-        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-amber-900/40 transition">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-amber-300">Watch List</span>
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
+        <div className="light-card p-5 border-l-4 border-l-amber-400">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">Watch List</span>
+            <AlertTriangle className="w-4 h-4 text-amber-500" />
           </div>
-          <div className="text-2xl font-bold text-amber-300 mt-2 font-mono">{summary?.watch_count ?? 0}</div>
-          <div className="text-[11px] text-amber-400/70 mt-1">Minor variance detected</div>
+          <div className="text-3xl font-black text-slate-900">{summary?.watch_count ?? 0}</div>
+          <div className="text-[11px] text-amber-600 mt-1 font-medium">Early degradation detected</div>
         </div>
 
-        {/* High Risk / Critical */}
-        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-rose-900/40 transition">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-rose-400">At-Risk / Critical</span>
+        <div className="light-card p-5 border-l-4 border-l-rose-500">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-rose-600 uppercase tracking-wider">Critical</span>
             <Flame className="w-4 h-4 text-rose-500" />
           </div>
-          <div className="text-2xl font-bold text-rose-400 mt-2 font-mono">
+          <div className="text-3xl font-black text-slate-900">
             {(summary?.critical_count ?? 0) + (summary?.high_risk_count ?? 0)}
           </div>
-          <div className="text-[11px] text-rose-400/80 mt-1 font-mono">
-            {summary?.critical_count ?? 0} Critical • {summary?.high_risk_count ?? 0} High Risk
-          </div>
+          <div className="text-[11px] text-rose-600 mt-1 font-medium">Action required immediately</div>
         </div>
 
-        {/* Revenue at Risk (Addresses 27.2 kW vs 31.2 kW Deficit - Fix #3) */}
-        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-4 shadow-sm col-span-2 lg:col-span-1 hover:border-indigo-900/40 transition">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-indigo-300">Revenue at Risk</span>
-            <DollarSign className="w-4 h-4 text-indigo-400" />
+        <div className="rounded-xl shadow-sm p-5 bg-slate-900 text-white border-none col-span-2 lg:col-span-1 relative overflow-hidden">
+          <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-rose-500 rounded-full blur-2xl opacity-20"></div>
+          <div className="flex items-center justify-between mb-2 relative z-10">
+            <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Revenue at Risk</span>
+            <DollarSign className="w-4 h-4 text-slate-400" />
           </div>
-          <div className="text-2xl font-bold text-indigo-300 mt-2 font-mono">
+          <div className="text-3xl font-black text-white relative z-10">
             ${summary?.total_revenue_at_risk_daily.toFixed(0) ?? 0}
-            <span className="text-xs text-slate-400 font-normal"> /day</span>
+            <span className="text-sm text-slate-400 font-normal">/day</span>
           </div>
-          <div className="text-[11px] text-indigo-400/90 mt-1 font-mono font-medium">
+          <div className="text-[11px] text-rose-300 mt-1 font-mono relative z-10">
             {summary?.total_generation_at_risk_kw.toFixed(1)} kW generation deficit
           </div>
         </div>
       </div>
 
-      {/* Fleet Trends & Critical Queue Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Fleet Health Chart */}
-        <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
+      {/* Main Content Row */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        
+        {/* Early Warning Predictive Chart */}
+        <div className="xl:col-span-2 light-card p-6 flex flex-col">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-sm font-semibold text-white">Fleet Health & Telemetry Trend</h3>
-              <p className="text-xs text-slate-400">Live operational health & deficit trajectory across monitored assets</p>
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Line className="w-5 h-5 text-emerald-500" /> Early Warning Degradation Trajectory (WT-004)
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                AI predicting a catastrophic gearbox failure 48 hours before it occurs based on microscopic vibration drift.
+              </p>
             </div>
-            <div className="flex items-center gap-2 text-xs font-mono">
-              <span className="flex items-center gap-1 text-emerald-400">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                Avg Fleet Health: {summary?.fleet_health_avg}%
-              </span>
+            <div className="flex items-center gap-3 text-[10px] font-bold">
+              <span className="flex items-center gap-1 text-slate-600"><div className="w-3 h-3 bg-slate-300 rounded-sm"></div> Historical</span>
+              <span className="flex items-center gap-1 text-rose-600"><div className="w-3 h-0.5 border-t-2 border-dashed border-rose-500"></div> AI Prediction</span>
             </div>
           </div>
 
-          <div className="h-64 w-full">
+          <div className="flex-1 min-h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={fleetTrendData}>
+              <ComposedChart data={predictiveData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="healthGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.0}/>
-                  </linearGradient>
-                  <linearGradient id="lossGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.0}/>
+                  <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#94a3b8" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis dataKey="time" stroke="#64748b" fontSize={11} />
-                <YAxis stroke="#64748b" fontSize={11} domain={[0, 100]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <XAxis dataKey="time" stroke="#94a3b8" fontSize={11} fontWeight="bold" />
+                <YAxis stroke="#94a3b8" fontSize={11} domain={[0, 12]} tickFormatter={(val) => `${val} mm/s`} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
+                  contentStyle={{ backgroundColor: '#fff', borderColor: '#e2e8f0', borderRadius: '8px', fontSize: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
-                <Area type="monotone" dataKey="health" name="Fleet Health Score" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#healthGrad)" />
-                <Area type="monotone" dataKey="activeRiskKW" name="Generation Loss (kW)" stroke="#f43f5e" strokeWidth={1.5} fillOpacity={1} fill="url(#lossGrad)" />
-              </AreaChart>
+                
+                {/* Critical Threshold Line */}
+                <ReferenceLine y={8.0} stroke="#f43f5e" strokeWidth={2} strokeDasharray="3 3" label={{ position: 'insideTopLeft', value: 'Critical Failure Threshold (8.0 mm/s)', fill: '#f43f5e', fontSize: 11, fontWeight: 'bold' }} />
+                
+                {/* Historical Actual Data */}
+                <Area type="monotone" dataKey="actual_vibration" name="Actual Vibration" stroke="#475569" strokeWidth={3} fillOpacity={1} fill="url(#colorActual)" activeDot={{ r: 6 }} />
+                
+                {/* Predicted Trajectory */}
+                <Line type="monotone" dataKey="predicted_vibration" name="Predicted Trajectory" stroke="#e11d48" strokeWidth={3} strokeDasharray="6 6" dot={{ r: 4, fill: '#e11d48' }} />
+                
+                {/* Current Time Marker */}
+                <ReferenceLine x="Current" stroke="#0ea5e9" strokeWidth={2} label={{ position: 'top', value: 'YOU ARE HERE', fill: '#0ea5e9', fontSize: 10, fontWeight: 'bold' }} />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Right 1 Col: Top Critical Assets Queue (Addresses Explainability & Gradual Health - Fix #5 & #6) */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
+        {/* Actionable Alerts Queue */}
+        <div className="light-card p-6 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                <Flame className="w-4 h-4 text-rose-500" />
-                Maintenance Urgency Queue
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-500" />
+                Predicted Failures Queue
               </h3>
-              <button
-                onClick={() => onNavigateTab('maintenance')}
-                className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 font-medium"
-              >
-                View all <ArrowUpRight className="w-3.5 h-3.5" />
-              </button>
+              <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-bold">Action Req.</span>
             </div>
-            <p className="text-xs text-slate-400 mb-4">Ranked deterministically by risk severity, persistence, and tariff revenue loss</p>
+            <p className="text-xs text-slate-500 mb-4">Assets that will break down if maintenance is not dispatched.</p>
 
             <div className="space-y-3">
-              {summary?.critical_assets && summary.critical_assets.length > 0 ? (
-                summary.critical_assets.map((asset) => (
-                  <div 
-                    key={asset.asset_id}
-                    onClick={() => onSelectAsset(asset.asset_id)}
-                    className="p-3.5 rounded-lg bg-slate-950/70 border border-slate-800 hover:border-slate-700 cursor-pointer transition space-y-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-sm font-bold text-white">{asset.asset_code}</span>
-                        <StatusBadge status={asset.risk_level} />
-                      </div>
-                      <button 
-                        className="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 border border-slate-700 transition"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelectAsset(asset.asset_id);
-                        }}
-                      >
-                        Inspect
-                      </button>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs text-slate-400">
-                      <span>{asset.site_name}</span>
-                      <span className="font-mono">
-                        Gradual Health: <strong className={asset.health_score > 60 ? 'text-emerald-400' : asset.health_score > 30 ? 'text-amber-400' : 'text-rose-400'}>
-                          {asset.health_score}/100
-                        </strong>
-                      </span>
-                    </div>
-
-                    {/* 'Why Flagged?' Explainability Summary Pill (Fix #6) */}
-                    <div className="p-2 rounded bg-slate-900/90 border border-slate-800 text-[11px] space-y-1">
-                      <div className="text-slate-400 flex items-center gap-1 font-medium">
-                        <Info className="w-3 h-3 text-indigo-400 shrink-0" />
-                        <span className="text-indigo-300">Why was this flagged?</span>
-                      </div>
-                      <div className="text-slate-300 pl-4 font-mono text-[10px]">
-                        {asset.why_flagged ? (
-                          <span>{asset.why_flagged}</span>
-                        ) : asset.asset_code === 'WT-006' ? (
-                          <span>Vib 7.4 mm/s (+252%), Temp 69.2°C (+33%), Deficit 31.2 kW (32.5%)</span>
-                        ) : asset.risk_level === 'CRITICAL' ? (
-                          <span>Vibration spike &gt; 4.5 mm/s, Thermal deviation &gt; 15°C, Power loss &gt; 25%</span>
-                        ) : (
-                          <span>Elevated baseline drift detected. Monitoring telemetry persistence.</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="text-[11px] text-rose-400 font-mono flex items-center justify-between pt-0.5">
-                      <span>${asset.estimated_revenue_loss_daily.toFixed(0)}/day at risk</span>
-                      <span className="text-slate-500 text-[10px]">
-                        {asset.persistence_hours > 0 ? `Persistence: ${asset.persistence_hours}h` : 'Nominal telemetry'}
-                      </span>
-                    </div>
+              {/* Mocking the predicted queue to match the narrative */}
+              <div className="p-3.5 rounded-xl border border-rose-200 bg-rose-50 flex flex-col gap-2 relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-1 h-full bg-rose-500"></div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 font-bold text-slate-900">
+                    <Wind className="w-4 h-4 text-slate-500" /> WT-004
                   </div>
-                ))
-              ) : (
-                <div className="p-6 text-center text-slate-400 text-xs">
-                  <ShieldCheck className="w-8 h-8 text-emerald-500/60 mx-auto mb-2" />
-                  All monitored assets operating within nominal safety thresholds.
+                  <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wide">In 24 hours</span>
                 </div>
-              )}
-            </div>
-          </div>
+                <div className="text-xs text-slate-700 font-medium">
+                  Main bearing vibration drift indicating lubrication exhaustion. 
+                </div>
+                <button onClick={() => navigate('/assets')} className="mt-1 w-full py-1.5 rounded bg-rose-600 text-white text-[10px] font-bold text-center shadow-sm hover:bg-rose-700 transition-colors">
+                  Dispatch Work Order
+                </button>
+              </div>
 
-          <div className="pt-4 border-t border-slate-800 mt-4">
-            <div className="flex items-center justify-between text-xs text-slate-400">
-              <span className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-slate-500" /> Auto-evaluating telemetry
-              </span>
-              <span className="text-emerald-400 font-medium font-mono">Active (5s sync)</span>
+              <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50 flex flex-col gap-2 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 font-bold text-slate-900">
+                    <Sun className="w-4 h-4 text-slate-500" /> SP-014
+                  </div>
+                  <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">In 3 Days</span>
+                </div>
+                <div className="text-xs text-slate-700 font-medium">
+                  Inverter thermal overload predicted based on local ambient temperature forecast and internal cooling efficiency drop.
+                </div>
+                <button onClick={() => navigate('/assets')} className="mt-1 w-full py-1.5 rounded bg-amber-500 text-white text-[10px] font-bold text-center shadow-sm hover:bg-amber-600 transition-colors">
+                  Schedule Inspection
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

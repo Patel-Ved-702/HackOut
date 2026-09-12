@@ -1,10 +1,9 @@
 import React from 'react';
 import { Activity, ShieldAlert, Wrench, LayoutDashboard, Cpu, UserCheck, UploadCloud } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 import { User } from '../types';
 
 interface NavbarProps {
-  currentTab: string;
-  setCurrentTab: (tab: string) => void;
   currentUser: User;
   setCurrentUser: (user: User) => void;
   alertCount: number;
@@ -12,152 +11,97 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  currentTab,
-  setCurrentTab,
   currentUser,
   setCurrentUser,
   alertCount,
   onOpenUploadCsv,
 }) => {
-  const toggleUserRole = () => {
-    if (currentUser.role === 'operator') {
-      setCurrentUser({
-        id: 2,
-        name: 'Alex Technician',
-        email: 'technician@renewguard.io',
-        role: 'technician',
-      });
-      setCurrentTab('technician');
-    } else {
-      setCurrentUser({
-        id: 1,
-        name: 'Sarah Operator',
-        email: 'operator@renewguard.io',
-        role: 'operator',
-      });
-      setCurrentTab('dashboard');
-    }
-  };
-
   return (
-    <header className="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
+      <div className="max-w-[1400px] mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Brand */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-              <Activity className="w-6 h-6 text-slate-950 stroke-[2.5]" />
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+              </svg>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-white tracking-tight">RenewGuard AI</span>
-                <span className="px-1.5 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  HackOut'26
-                </span>
-              </div>
-              <p className="text-xs text-slate-400">Predictive Maintenance for Solar & Wind Assets</p>
+            <div className="flex items-center">
+              <span className="text-xl font-bold text-slate-900 tracking-tight leading-none">RENEWGUARD</span>
+              <span className="ml-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1 py-0.5 rounded border border-emerald-200">AI</span>
             </div>
           </div>
 
           {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1">
-            <button
-              onClick={() => setCurrentTab('dashboard')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                currentTab === 'dashboard'
-                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-              }`}
+          <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
+            <NavLink
+              to="/"
+              className={({ isActive }) => `pb-1 transition-colors ${isActive ? 'text-slate-900 border-b-2 border-slate-900' : 'hover:text-slate-900'}`}
             >
-              <LayoutDashboard className="w-4 h-4" />
-              Fleet Dashboard
-            </button>
+              Fleet Overview
+            </NavLink>
 
-            <button
-              onClick={() => setCurrentTab('assets')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                currentTab === 'assets'
-                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-              }`}
+            <NavLink
+              to="/assets"
+              className={({ isActive }) => `px-3 py-1.5 rounded-lg transition-colors ${isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'hover:text-slate-900'}`}
             >
-              <Cpu className="w-4 h-4" />
               Asset Monitor
-            </button>
+            </NavLink>
 
-            <button
-              onClick={() => setCurrentTab('alerts')}
-              className={`relative flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                currentTab === 'alerts'
-                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-              }`}
+            <NavLink
+              to="/alerts"
+              className={({ isActive }) => `pb-1 transition-colors relative ${isActive ? 'text-slate-900 border-b-2 border-slate-900' : 'hover:text-slate-900'}`}
             >
-              <ShieldAlert className="w-4 h-4" />
-              Alerts
+              Diagnostics
               {alertCount > 0 && (
-                <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-rose-500 text-white animate-pulse">
-                  {alertCount}
-                </span>
+                <span className="absolute -top-1 -right-3 w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
               )}
-            </button>
+            </NavLink>
 
-            <button
-              onClick={() => setCurrentTab('maintenance')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                currentTab === 'maintenance'
-                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-              }`}
+            <NavLink
+              to="/maintenance"
+              className={({ isActive }) => `pb-1 transition-colors ${isActive ? 'text-slate-900 border-b-2 border-slate-900' : 'hover:text-slate-900'}`}
             >
-              <Wrench className="w-4 h-4" />
-              Maintenance Priority
-            </button>
+              Work Orders
+            </NavLink>
 
-            <button
-              onClick={() => setCurrentTab('technician')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                currentTab === 'technician'
-                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-              }`}
+            <NavLink
+              to="/settings"
+              className={({ isActive }) => `pb-1 transition-colors ${isActive ? 'text-slate-900 border-b-2 border-slate-900' : 'hover:text-slate-900'}`}
             >
-              <UserCheck className="w-4 h-4" />
-              Technician Workspace
-            </button>
+              Settings
+            </NavLink>
           </nav>
 
-          {/* User Role Switcher, Upload CSV & Simulation Tag */}
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={onOpenUploadCsv}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/40 text-xs font-semibold shadow-sm transition"
-              title="Upload CSV sensor telemetry dataset"
-            >
-              <UploadCloud className="w-4 h-4" />
-              <span>Upload CSV</span>
-            </button>
-
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-              SIMULATION MODE
+          {/* Right Side Info */}
+          <div className="flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
+              Telemetry: Live (Edge-Connected)
             </div>
 
-            <button
-              onClick={toggleUserRole}
-              title="Click to toggle user role for testing"
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs transition"
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-100 text-slate-500 text-xs font-mono">
+              <Activity className="w-3.5 h-3.5" />
+              <span>Synced: <br/><strong>02:52:56</strong></span>
+            </div>
+
+            <button 
+              onClick={onOpenUploadCsv}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 rounded-md text-xs font-bold border border-slate-300 shadow-sm transition-colors"
             >
-              <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
-                {currentUser.name[0]}
-              </div>
-              <div className="text-left hidden sm:block">
-                <div className="text-slate-200 font-medium leading-tight">{currentUser.name}</div>
-                <div className="text-[10px] text-slate-400 uppercase tracking-wide">
-                  Role: <span className="text-emerald-400 font-semibold">{currentUser.role}</span>
-                </div>
-              </div>
+              <UploadCloud className="w-4 h-4 text-emerald-600" />
+              Upload CSV
             </button>
+
+            <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
+              <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 text-sm">
+                OP
+              </div>
+              <div className="text-left hidden sm:block leading-tight">
+                <div className="text-sm font-bold text-slate-800">Operator Portal</div>
+                <div className="text-[10px] text-slate-500 font-medium">Fleet Control Center</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

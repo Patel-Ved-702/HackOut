@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Dashboard } from './pages/Dashboard';
 import { Assets } from './pages/Assets';
@@ -11,8 +12,6 @@ import { User } from './types';
 import { api } from './services/api';
 
 export const App: React.FC = () => {
-  const [currentTab, setCurrentTab] = useState<string>('dashboard');
-  const [selectedAssetId, setSelectedAssetId] = useState<number | null>(4); // Default WT-004
   const [alertCount, setAlertCount] = useState<number>(0);
   const [isCsvModalOpen, setIsCsvModalOpen] = useState<boolean>(false);
   const [refreshKey, setRefreshKey] = useState<number>(0);
@@ -40,16 +39,9 @@ export const App: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleSelectAsset = (assetId: number) => {
-    setSelectedAssetId(assetId);
-    setCurrentTab('asset_details');
-  };
-
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       <Navbar
-        currentTab={currentTab}
-        setCurrentTab={setCurrentTab}
         currentUser={currentUser}
         setCurrentUser={setCurrentUser}
         alertCount={alertCount}
@@ -65,37 +57,18 @@ export const App: React.FC = () => {
         }}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {currentTab === 'dashboard' && (
-          <Dashboard key={refreshKey} onSelectAsset={handleSelectAsset} onNavigateTab={setCurrentTab} />
-        )}
-
-        {currentTab === 'assets' && (
-          <Assets key={refreshKey} onSelectAsset={handleSelectAsset} />
-        )}
-
-        {currentTab === 'asset_details' && selectedAssetId && (
-          <AssetDetails
-            assetId={selectedAssetId}
-            onBack={() => setCurrentTab('assets')}
-            onNavigateTab={setCurrentTab}
-          />
-        )}
-
-        {currentTab === 'alerts' && (
-          <Alerts onSelectAsset={handleSelectAsset} />
-        )}
-
-        {currentTab === 'maintenance' && (
-          <Maintenance onSelectAsset={handleSelectAsset} />
-        )}
-
-        {currentTab === 'technician' && (
-          <Technician />
-        )}
+      <main className="flex-1 w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <Routes>
+          <Route path="/" element={<Dashboard key={refreshKey} />} />
+          <Route path="/assets" element={<Assets key={refreshKey} />} />
+          <Route path="/assets/:id" element={<AssetDetails />} />
+          <Route path="/alerts" element={<Alerts />} />
+          <Route path="/maintenance" element={<Maintenance />} />
+          <Route path="/settings" element={<Technician />} />
+        </Routes>
       </main>
 
-      <footer className="border-t border-slate-900 bg-slate-950/80 py-4 text-center text-xs text-slate-400">
+      <footer className="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
         RenewGuard AI • HackOut'26 Predictive Maintenance Platform • Wind & Solar Asset Intelligence
       </footer>
     </div>
