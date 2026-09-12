@@ -196,35 +196,25 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="space-y-4 flex-1">
-            <div className="p-4 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100/50 transition-colors cursor-pointer group" onClick={() => navigate('/assets')}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 text-sm font-black text-slate-900">
-                  <Wind className="w-4 h-4 text-slate-500" /> WT-004
+            {summary?.critical_assets?.slice(0, 3).map((asset) => (
+              <div key={asset.asset_id} className={`p-4 rounded-xl border ${asset.risk_level === 'CRITICAL' ? 'border-rose-200 bg-rose-50 hover:bg-rose-100/50' : 'border-amber-200 bg-amber-50 hover:bg-amber-100/50'} transition-colors cursor-pointer group`} onClick={() => navigate(`/assets/${asset.asset_id}`)}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 text-sm font-black text-slate-900">
+                    {asset.asset_type === 'wind_turbine' ? <Wind className="w-4 h-4 text-slate-500" /> : <Sun className="w-4 h-4 text-slate-500" />} {asset.asset_code}
+                  </div>
+                  <span className={`text-[10px] font-black uppercase tracking-widest bg-white px-2 py-0.5 rounded shadow-sm ${asset.risk_level === 'CRITICAL' ? 'text-rose-600' : 'text-amber-600'}`}>{asset.risk_level}</span>
                 </div>
-                <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest bg-white px-2 py-0.5 rounded shadow-sm">In 24h</span>
-              </div>
-              <div className="text-xs text-slate-700 font-medium leading-relaxed mb-3">
-                Main bearing vibration drift indicates imminent lubrication exhaustion.
-              </div>
-              <button className="w-full py-2 rounded-lg bg-white border border-rose-200 text-rose-700 text-xs font-bold shadow-sm hover:bg-rose-50 transition-colors flex items-center justify-center gap-2 group-hover:bg-rose-600 group-hover:text-white group-hover:border-rose-600">
-                Create Work Order <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
-
-            <div className="p-4 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100/50 transition-colors cursor-pointer group" onClick={() => navigate('/assets')}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 text-sm font-black text-slate-900">
-                  <Sun className="w-4 h-4 text-slate-500" /> SP-014
+                <div className="text-xs text-slate-700 font-medium leading-relaxed mb-3">
+                  {asset.why_flagged || 'Degradation detected'}
                 </div>
-                <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest bg-white px-2 py-0.5 rounded shadow-sm">In 3 Days</span>
+                <button className={`w-full py-2 rounded-lg bg-white border text-xs font-bold shadow-sm transition-colors flex items-center justify-center gap-2 ${asset.risk_level === 'CRITICAL' ? 'border-rose-200 text-rose-700 hover:bg-rose-50 group-hover:bg-rose-600 group-hover:text-white group-hover:border-rose-600' : 'border-amber-200 text-amber-700 hover:bg-amber-50 group-hover:bg-amber-500 group-hover:text-white group-hover:border-amber-500'}`}>
+                  Create Work Order <ArrowRight className="w-3 h-3" />
+                </button>
               </div>
-              <div className="text-xs text-slate-700 font-medium leading-relaxed mb-3">
-                Inverter thermal overload predicted based on ambient temp forecast.
-              </div>
-              <button className="w-full py-2 rounded-lg bg-white border border-amber-200 text-amber-700 text-xs font-bold shadow-sm hover:bg-amber-50 transition-colors flex items-center justify-center gap-2 group-hover:bg-amber-500 group-hover:text-white group-hover:border-amber-500">
-                Schedule Inspection <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
+            ))}
+            {(!summary?.critical_assets || summary.critical_assets.length === 0) && (
+              <div className="p-4 text-center text-sm font-medium text-slate-500">No critical assets found.</div>
+            )}
           </div>
         </div>
 

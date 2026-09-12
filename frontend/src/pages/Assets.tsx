@@ -31,8 +31,10 @@ export const Assets: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const criticalAssets = assets.filter(a => a.status === 'CRITICAL').length;
+
   const filteredAssets = assets.filter(a => {
-    if (statusFilter !== 'ALL' && a.health_status !== statusFilter) return false;
+    if (statusFilter !== 'ALL' && a.status !== statusFilter) return false;
     if (typeFilter !== 'ALL' && a.asset_type !== typeFilter) return false;
     if (search && !a.asset_code.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
@@ -111,31 +113,33 @@ export const Assets: React.FC = () => {
               className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-emerald-200 transition-all cursor-pointer group relative overflow-hidden"
             >
               {/* Top Accent line for critical assets */}
-              {asset.health_status === 'CRITICAL' && (
+              {asset.status === 'CRITICAL' && (
                 <div className="absolute top-0 left-0 w-full h-1 bg-rose-500"></div>
               )}
-              {asset.health_status === 'WATCH' && (
+              {asset.status === 'WATCH' && (
                 <div className="absolute top-0 left-0 w-full h-1 bg-amber-400"></div>
               )}
 
               <div className="flex items-start justify-between mb-4">
                 <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-emerald-50 transition-colors">
-                  {asset.asset_type === 'wind' ? (
+                  {asset.asset_type === 'wind_turbine' ? (
                     <Wind className="w-5 h-5 text-slate-700 group-hover:text-emerald-600" />
                   ) : (
                     <Sun className="w-5 h-5 text-slate-700 group-hover:text-emerald-600" />
                   )}
                 </div>
-                <StatusBadge status={asset.health_status} />
+                <StatusBadge status={asset.status} />
               </div>
               
+              <div className="absolute top-6 right-6 text-[10px] font-black text-slate-400 tracking-widest uppercase">{asset.site_name}</div>
               <h3 className="text-lg font-black text-slate-900 mb-1">{asset.asset_code}</h3>
               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">
-                {asset.location}
+                {asset.site_name}
               </div>
               
               <div className="pt-4 border-t border-slate-100 grid grid-cols-2 gap-4">
                 <div>
+                  <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{asset.asset_type === 'wind_turbine' ? 'Wind Turbine' : 'Solar Panel'}</div>
                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1 mb-1">
                     <Activity className="w-3 h-3" /> Score
                   </div>
@@ -151,12 +155,12 @@ export const Assets: React.FC = () => {
                     <Settings2 className="w-3 h-3" /> Model
                   </div>
                   <div className="text-sm font-bold text-slate-700 truncate">
-                    {asset.model || 'Standard'}
+                    {asset.asset_code || 'Standard'}
                   </div>
                 </div>
               </div>
 
-              {asset.health_status === 'CRITICAL' && (
+              {asset.status === 'CRITICAL' && (
                 <div className="mt-4 px-3 py-2 bg-rose-50 rounded-lg border border-rose-100 text-xs font-medium text-rose-700 flex items-center justify-between">
                   Action Required
                   <ChevronRight className="w-4 h-4 text-rose-400" />

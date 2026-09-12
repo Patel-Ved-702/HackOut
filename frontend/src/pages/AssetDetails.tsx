@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { 
   ArrowLeft, Wind, Sun, Thermometer, Activity, Zap, DollarSign, Wrench, 
-  AlertCircle, CheckCircle, MapPin, Zap as PowerIcon, ActivitySquare
+  AlertCircle, CheckCircle, MapPin, Zap as PowerIcon, ActivitySquare, BrainCircuit
 } from 'lucide-react';
 import { 
   LineChart, Line, ResponsiveContainer, XAxis, Tooltip
@@ -68,7 +68,7 @@ export const AssetDetails: React.FC = () => {
         
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="flex items-center gap-4 flex-wrap">
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight">{asset?.asset_code || 'WT-004'}</h1>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tight">{asset?.asset_code || 'Unknown Asset'}</h1>
             
             <div className="flex flex-col sm:flex-row gap-2">
               <span className="flex items-center gap-1.5 px-3 py-1 bg-sky-50 text-sky-700 border border-sky-200 rounded-full text-[10px] font-black uppercase tracking-widest">
@@ -77,7 +77,7 @@ export const AssetDetails: React.FC = () => {
               </span>
               
               <span className="flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-600 border border-slate-200 rounded-full text-[10px] font-black uppercase tracking-widest">
-                <MapPin className="w-3.5 h-3.5" /> {asset?.site_name || 'GreenWind Site'}
+                <MapPin className="w-3.5 h-3.5" /> {asset?.site_name || 'Unknown Site'}
               </span>
               
               <span className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${
@@ -143,7 +143,7 @@ export const AssetDetails: React.FC = () => {
               <PowerIcon className="w-3.5 h-3.5" /> Rated Capacity
             </h4>
             <div className="text-lg font-black text-slate-900 mb-1">
-              {asset?.rated_capacity || '2.5'} MW
+              {asset?.rated_capacity || '0'} MW
             </div>
             <div className="text-[10px] font-bold text-slate-500">Vestas V112 / #BRG-9842</div>
           </div>
@@ -164,7 +164,7 @@ export const AssetDetails: React.FC = () => {
           </div>
           <div className="flex items-end justify-between mt-2 z-10">
             <div className="text-4xl font-black text-slate-900 tracking-tighter">
-              {asset?.latest_reading?.temperature ? `${asset.latest_reading.temperature.toFixed(1)}°` : '67.2°'}
+              {asset?.latest_reading?.temperature ? `${asset.latest_reading.temperature.toFixed(1)}°` : '--°'}
             </div>
             <div className="text-rose-600 font-bold text-xs bg-rose-50 px-2 py-1 rounded-md">
               ↗ 18% 
@@ -190,7 +190,7 @@ export const AssetDetails: React.FC = () => {
           </div>
           <div className="flex items-end justify-between mt-2 z-10">
             <div className="text-4xl font-black text-slate-900 tracking-tighter flex items-baseline gap-1">
-              {asset?.latest_reading?.vibration ? `${asset.latest_reading.vibration.toFixed(1)}` : '6.8'} <span className="text-sm text-slate-400 font-bold">mm/s</span>
+              {asset?.latest_reading?.vibration ? `${asset.latest_reading.vibration.toFixed(1)}` : '--'} <span className="text-sm text-slate-400 font-bold">mm/s</span>
             </div>
             <div className="text-rose-600 font-bold text-xs bg-rose-50 px-2 py-1 rounded-md">
               ↗ 42% 
@@ -216,7 +216,7 @@ export const AssetDetails: React.FC = () => {
           </div>
           <div className="flex items-end justify-between mt-2 z-10">
             <div className="text-4xl font-black text-slate-900 tracking-tighter flex items-baseline gap-1">
-              {asset?.latest_reading?.current ? `${asset.latest_reading.current.toFixed(1)}` : '38.1'} <span className="text-sm text-slate-400 font-bold">A</span>
+              {asset?.latest_reading?.current ? `${asset.latest_reading.current.toFixed(1)}` : '--'} <span className="text-sm text-slate-400 font-bold">A</span>
             </div>
             <div className="text-slate-500 font-bold text-xs bg-slate-50 px-2 py-1 rounded-md">
               ± 1.2%
@@ -242,7 +242,7 @@ export const AssetDetails: React.FC = () => {
           </div>
           <div className="flex items-end justify-between mt-2 z-10">
             <div className="text-4xl font-black text-slate-900 tracking-tighter flex items-baseline gap-1">
-              {asset?.latest_reading?.power_output ? `${asset.latest_reading.power_output.toFixed(1)}` : '68.4'} <span className="text-sm text-slate-400 font-bold">kW</span>
+              {asset?.latest_reading?.power_output ? `${asset.latest_reading.power_output.toFixed(1)}` : '--'} <span className="text-sm text-slate-400 font-bold">kW</span>
             </div>
             <div className="text-rose-600 font-bold text-xs bg-rose-50 px-2 py-1 rounded-md">
               ↘ 23%

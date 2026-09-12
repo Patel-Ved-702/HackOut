@@ -7,6 +7,7 @@ import { AssetDetails } from './pages/AssetDetails';
 import { Alerts } from './pages/Alerts';
 import { Maintenance } from './pages/Maintenance';
 import { Technician } from './pages/Technician';
+import { SuperAdmin } from './pages/SuperAdmin';
 import { Settings } from './pages/Settings';
 import { Landing } from './pages/Landing';
 import { Login } from './pages/Login';
@@ -97,6 +98,12 @@ export const App: React.FC = () => {
           <Route path="/maintenance" element={<Maintenance />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/technician" element={<Technician />} />
+          
+          {/* Protected Super Admin Route */}
+          {currentUser.role === 'superadmin' && (
+            <Route path="/superadmin" element={<SuperAdmin />} />
+          )}
+
           {/* Catch-all for authenticated users */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

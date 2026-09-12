@@ -11,6 +11,9 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
 
+class UserUpdateRole(BaseModel):
+    role: str
+
 class UserLogin(BaseModel):
     email: str
     password: str
@@ -250,6 +253,16 @@ class DashboardSummaryOut(BaseModel):
     critical_assets: List[PriorityQueueItem]
     trend_data: Optional[List[Dict[str, Any]]] = None
     scope: Optional[str] = None
+
+# --- Web Data Summary Schema ---
+class WebDataSummaryOut(BaseModel):
+    total_users: int
+    total_sites: int
+    total_assets: int
+    total_sensor_readings: int
+    total_health_predictions: int
+    total_alerts: int
+    total_maintenance_tasks: int
 
 # --- CSV Batch Upload Schemas (Section 11) ---
 class CsvUploadAssetSummaryOut(BaseModel):

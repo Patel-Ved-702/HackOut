@@ -28,12 +28,7 @@ export const Maintenance: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const displayData = priorities.length > 0 ? priorities : [
-    { asset_id: 1, rank: 1, asset_code: 'WT-004', site_name: 'Wind Turbine', risk_level: 'CRITICAL', health_score: 24, estimated_revenue_loss_daily: 3240, recommended_action: 'Inspect Bearing' },
-    { asset_id: 2, rank: 2, asset_code: 'WT-009', site_name: 'Wind Turbine', risk_level: 'HIGH RISK', health_score: 24, estimated_revenue_loss_daily: 3240, recommended_action: 'Thermal Check' },
-    { asset_id: 3, rank: 3, asset_code: 'SP-021', site_name: 'Solar Panel', risk_level: 'HIGH RISK', health_score: 48, estimated_revenue_loss_daily: 1890, recommended_action: 'Clean Array' },
-    { asset_id: 4, rank: 4, asset_code: 'SP-033', site_name: 'Solar Panel', risk_level: 'HIGH RISK', health_score: 56, estimated_revenue_loss_daily: 1440, recommended_action: 'Check Inverter' },
-  ];
+  const displayData = priorities;
 
   return (
     <div className="max-w-[1400px] mx-auto pb-12 space-y-6">
@@ -160,8 +155,7 @@ export const Maintenance: React.FC = () => {
                             </div>
                           </td>
                           <td className="px-5 py-6 font-mono text-slate-900 font-black text-sm flex flex-col gap-1">
-                            <div>{index === 2 ? '310' : index === 3 ? '240' : '420'} <span className="text-[10px] text-slate-500 font-bold font-sans">kWh</span></div>
-                            <div className="text-xs text-rose-600 font-bold font-sans">₹{item.estimated_revenue_loss_daily || 3240}</div>
+                            <div className="text-xs text-rose-600 font-bold font-sans">₹{item.estimated_revenue_loss_daily}</div>
                           </td>
                           <td className="px-5 py-6 text-right">
                             <button className="px-4 py-2 bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg shadow-md hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 ml-auto">
@@ -189,13 +183,13 @@ export const Maintenance: React.FC = () => {
               <div className="space-y-5 text-sm mb-8">
                 <div className="flex justify-between items-center pb-4 border-b border-slate-100">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Target Asset</span>
-                  <span className="font-mono font-black text-slate-900 text-base">{selectedAsset?.asset_code || 'WT-004'}</span>
+                  <span className="font-mono font-black text-slate-900 text-base">{selectedAsset?.asset_code}</span>
                 </div>
                 
                 <div className="flex justify-between items-center pb-4 border-b border-slate-100">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Priority Class</span>
                   <span className={`font-black uppercase text-[10px] tracking-widest px-2 py-0.5 rounded border ${selectedAsset?.risk_level === 'CRITICAL' ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-amber-50 text-amber-600 border-amber-200'}`}>
-                    {selectedAsset?.risk_level || 'CRITICAL'}
+                    {selectedAsset?.risk_level}
                   </span>
                 </div>
 
@@ -212,7 +206,7 @@ export const Maintenance: React.FC = () => {
                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">AI Recommended Action</label>
                   <select className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer">
                     <option>Inspect, Review, etc.</option>
-                    <option selected>Immediate Bearing Inspection</option>
+                    <option selected>{selectedAsset?.recommended_action || 'Immediate Inspection'}</option>
                   </select>
                 </div>
 
@@ -221,8 +215,7 @@ export const Maintenance: React.FC = () => {
                   <textarea 
                     rows={3}
                     className="w-full border border-slate-200 bg-slate-50 rounded-xl p-4 text-slate-700 text-xs font-mono font-medium outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all resize-none"
-                    defaultValue={`[AI DIAGNOSTICS]
-High probability of main bearing lubrication failure detected. Vibration harmonics exceeded ISO Zone D limits continuously for past 45 mins.`}
+                    defaultValue={`[AI DIAGNOSTICS]\n${selectedAsset?.why_flagged || 'Review telemetry for details.'}`}
                   ></textarea>
                 </div>
 

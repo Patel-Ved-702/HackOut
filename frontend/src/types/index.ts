@@ -2,7 +2,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role: 'operator' | 'technician';
+  role: 'operator' | 'technician' | 'superadmin';
 }
 
 export interface SensorReading {
@@ -202,3 +202,14 @@ export interface CsvUploadResult {
   assets_analyzed: CsvUploadAssetSummary[];
   duplicates_note?: string;
 }
+
+export interface WebDataSummary {
+  total_users: number;
+  total_sites: number;
+  total_assets: number;
+  total_sensor_readings: number;
+  total_health_predictions: number;
+  total_alerts: number;
+  total_maintenance_tasks: number;
+}
+

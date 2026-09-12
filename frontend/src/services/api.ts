@@ -6,7 +6,8 @@ import {
   PriorityQueueItem, 
   ImpactAssessment, 
   SensorReading, 
-  User 
+  User,
+  WebDataSummary
 } from '../types';
 
 const API_BASE = '/api';
@@ -20,6 +21,16 @@ export const api = {
       body: JSON.stringify({ email, password }),
     });
     if (!res.ok) throw new Error('Login failed: Invalid credentials');
+    return res.json();
+  },
+
+  register: async (name: string, email: string, password: string):Promise<{ access_token: string; user: User }> => {
+    const res = await fetch(`${API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    });
+    if (!res.ok) throw new Error('Registration failed: Email might be taken');
     return res.json();
   },
 
@@ -141,6 +152,37 @@ export const api = {
       const errData = await res.json().catch(() => ({ detail: 'Upload failed' }));
       throw new Error(errData.detail || 'CSV upload failed');
     }
+    return res.json();
+  },
+
+  // Admin
+  adminGetUsers: async (): Promise<User[]> => {
+    const res = await fetch(`${API_BASE}/admin/users`);
+    if (!res.ok) throw new Error('Failed to fetch users');
+    return res.json();
+  },
+  adminUpdateRole: async (userId: number, role: string): Promise<User> => {
+    const res = await fetch(`${API_BASE}/admin/users/${userId}/role`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role }),
+    });
+    if (!res.ok) throw new Error('Failed to update role');
+    return res.json();
+  },
+  adminDeleteUser: async (userId: number): Promise<{ message: string }> => {
+    const res = await fetch(`${API_BASE}/admin/users/${userId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete user');
+    return res.json();
+  },
+  adminGetWebData: async (): Promise<WebDataSummary> => {
+    const res = await fetch(`${API_BASE}/admin/web-data`);
+    if (!res.ok) throw new Error('Failed to fetch web data');
+    return res.json();
+  },
+  adminPurgeData: async (): Promise<{ message: string; readings_deleted: number; predictions_deleted: number }> => {
+    const res = await fetch(`${API_BASE}/admin/purge-data`, { method: 'POST' });
+    if (!res.ok) throw new Error('Failed to purge data');
     return res.json();
   }
 };

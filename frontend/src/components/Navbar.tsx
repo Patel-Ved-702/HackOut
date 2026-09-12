@@ -65,6 +65,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               Work Orders
             </NavLink>
+
+            {currentUser.role === 'superadmin' && (
+              <NavLink
+                to="/superadmin"
+                className={({ isActive }) => `pb-1 transition-colors flex items-center gap-1 ${isActive ? 'text-indigo-600 border-b-2 border-indigo-600' : 'hover:text-indigo-600 text-indigo-900'}`}
+              >
+                <ShieldAlert className="w-4 h-4" /> Admin Panel
+              </NavLink>
+            )}
           </nav>
 
           {/* Right Side Info */}

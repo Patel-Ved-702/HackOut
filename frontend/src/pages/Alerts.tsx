@@ -73,7 +73,7 @@ export const Alerts: React.FC = () => {
                   <Bell className="w-3.5 h-3.5" /> Active Alerts
                 </div>
                 <div className="flex items-end justify-between">
-                  <div className="text-4xl font-black text-slate-900">{alerts.filter(a => a.status === 'active').length || 12}</div>
+                  <div className="text-4xl font-black text-slate-900">{alerts.filter(a => a.status === 'active').length}</div>
                   <div className="w-16 h-8 opacity-50">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={sparkData}>
@@ -88,28 +88,28 @@ export const Alerts: React.FC = () => {
                 <div className="flex items-center gap-1.5 text-rose-500 text-[10px] uppercase tracking-widest font-bold mb-3">
                   <AlertTriangle className="w-3.5 h-3.5" /> Critical
                 </div>
-                <div className="text-4xl font-black text-slate-900">{alerts.filter(a => a.severity === 'CRITICAL').length || 3}</div>
+                <div className="text-4xl font-black text-slate-900">{alerts.filter(a => a.severity === 'CRITICAL').length}</div>
               </div>
 
               <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-1.5 text-amber-500 text-[10px] uppercase tracking-widest font-bold mb-3">
                   <AlertTriangle className="w-3.5 h-3.5" /> High Risk
                 </div>
-                <div className="text-4xl font-black text-slate-900">{alerts.filter(a => a.severity === 'HIGH').length || 5}</div>
+                <div className="text-4xl font-black text-slate-900">{alerts.filter(a => a.severity === 'WARNING').length}</div>
               </div>
 
               <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-1.5 text-sky-500 text-[10px] uppercase tracking-widest font-bold mb-3">
                   <Eye className="w-3.5 h-3.5" /> Watch
                 </div>
-                <div className="text-4xl font-black text-slate-900">4</div>
+                <div className="text-4xl font-black text-slate-900">{alerts.filter(a => a.severity === 'INFO').length}</div>
               </div>
 
               <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-1.5 text-emerald-500 text-[10px] uppercase tracking-widest font-bold mb-3">
                   <CheckCircle className="w-3.5 h-3.5" /> Acknowledged
                 </div>
-                <div className="text-4xl font-black text-slate-900">{alerts.filter(a => a.status === 'acknowledged').length || 8}</div>
+                <div className="text-4xl font-black text-slate-900">{alerts.filter(a => a.status === 'acknowledged').length}</div>
               </div>
             </div>
           </div>
@@ -168,7 +168,7 @@ export const Alerts: React.FC = () => {
                           }`}>
                             {isCritical ? 'Critical' : 'High Risk'}
                           </div>
-                          <div className="font-mono font-black text-slate-900 mb-1">{al.title.split(' ')[0] || 'WT-004'}</div>
+                          <div className="font-mono font-black text-slate-900 mb-1">{al.asset?.asset_code || al.title.split(' ')[0]}</div>
                           <div className="text-xs text-slate-500 font-medium">{al.message}</div>
                         </td>
                         <td className="px-5 py-4 text-slate-600 font-mono font-bold text-xs">
@@ -274,7 +274,7 @@ export const Alerts: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Asset Target</span>
-                  <span className="font-mono font-black text-slate-900">WT-004</span>
+                  <span className="font-mono font-black text-slate-900">{selectedAlert.asset?.asset_code}</span>
                 </div>
                 <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Time Registered</span>

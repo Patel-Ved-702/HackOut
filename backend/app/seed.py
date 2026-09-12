@@ -32,10 +32,17 @@ def seed_database():
         password_hash=hash_password("password123"),
         role="technician"
     )
-    db.add_all([operator_user, technician_user])
+    admin_user = User(
+        name="Super Admin",
+        email="admin@renewguard.io",
+        password_hash=hash_password("password123"),
+        role="superadmin"
+    )
+    db.add_all([operator_user, technician_user, admin_user])
     db.commit()
     db.refresh(operator_user)
     db.refresh(technician_user)
+    db.refresh(admin_user)
 
     # 2. Sites
     site_wind = Site(name="GreenWind Energy Farm", location_name="Tehachapi Pass, CA", site_type="wind")

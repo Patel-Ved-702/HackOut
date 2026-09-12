@@ -84,7 +84,7 @@ export const Login: React.FC = () => {
               <label className="text-xs font-bold text-slate-700 ml-1">Email Address</label>
               <div className="relative">
                 <input 
-                  type="email" 
+                  type="text" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email address"

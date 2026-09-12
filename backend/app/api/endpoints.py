@@ -11,13 +11,14 @@ from sqlalchemy import desc, or_
 from app.database import get_db
 from app.models import User, Site, Asset, SensorReading, HealthPrediction, Alert, MaintenanceTask, EconomicConfig
 from app.schemas import (
-    UserLogin, Token, UserOut,
+    UserLogin, UserCreate, Token, UserOut,
     SiteOut, AssetOut, SensorReadingCreate, SensorReadingOut,
     HealthPredictionOut, AlertOut, MaintenanceTaskCreate, MaintenanceTaskUpdate,
     MaintenanceTaskOut, ImpactAssessmentOut, PriorityQueueItem, DashboardSummaryOut,
-    CsvUploadResponseOut, CsvUploadAssetSummaryOut, AssetDiagnosticsOut
+    CsvUploadResponseOut, CsvUploadAssetSummaryOut, AssetDiagnosticsOut,
+    UserUpdateRole, WebDataSummaryOut
 )
-from app.services.auth_service import verify_password, create_access_token
+from app.services.auth_service import verify_password, create_access_token, hash_password
 from app.services.anomaly_service import anomaly_service
 from app.services.health_service import health_service
 from app.services.impact_service import impact_service
@@ -33,6 +34,28 @@ LAST_CSV_UPLOADED_ASSET_CODES = [
 ]
 
 # --- Auth ---
+@router.post("/auth/register", response_model=Token)
+def register(user_in: UserCreate, db: Session = Depends(get_db)):
+    if db.query(User).filter(User.email == user_in.email).first():
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    new_user = User(
+        name=user_in.name,
+        email=user_in.email,
+        password_hash=hash_password(user_in.password),
+        role=user_in.role or "operator"
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    token = create_access_token({"sub": new_user.email, "role": new_user.role})
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": new_user
+    }
+
 @router.post("/auth/login", response_model=Token)
 def login(credentials: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == credentials.email).first()
@@ -1331,3 +1354,54 @@ def get_fleet_diagnostics(
     return [_build_asset_diagnostics(a, db) for a in assets]
 
 
+# --- Super Admin Management ---
+
+@router.get("/admin/users", response_model=List[UserOut])
+def get_all_users(db: Session = Depends(get_db)):
+    return db.query(User).all()
+
+@router.patch("/admin/users/{user_id}/role", response_model=UserOut)
+def update_user_role(user_id: int, role_update: UserUpdateRole, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if role_update.role not in ["operator", "technician", "superadmin"]:
+        raise HTTPException(status_code=400, detail="Invalid role")
+    user.role = role_update.role
+    db.commit()
+    db.refresh(user)
+    return user
+
+@router.delete("/admin/users/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user)
+    db.commit()
+    return {"message": "User deleted successfully"}
+
+@router.get("/admin/web-data", response_model=WebDataSummaryOut)
+def get_web_data_summary(db: Session = Depends(get_db)):
+    return {
+        "total_users": db.query(User).count(),
+        "total_sites": db.query(Site).count(),
+        "total_assets": db.query(Asset).count(),
+        "total_sensor_readings": db.query(SensorReading).count(),
+        "total_health_predictions": db.query(HealthPrediction).count(),
+        "total_alerts": db.query(Alert).count(),
+        "total_maintenance_tasks": db.query(MaintenanceTask).count()
+    }
+
+@router.post("/admin/purge-data")
+def purge_old_data(db: Session = Depends(get_db)):
+    # Delete telemetry data older than 30 days
+    thirty_days_ago = datetime.datetime.utcnow() - datetime.timedelta(days=30)
+    readings_deleted = db.query(SensorReading).filter(SensorReading.timestamp < thirty_days_ago).delete()
+    predictions_deleted = db.query(HealthPrediction).filter(HealthPrediction.timestamp < thirty_days_ago).delete()
+    db.commit()
+    return {
+        "message": "Data purged successfully",
+        "readings_deleted": readings_deleted,
+        "predictions_deleted": predictions_deleted
+    }
