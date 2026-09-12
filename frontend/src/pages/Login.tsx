@@ -1,19 +1,30 @@
 import React, { useState } from 'react';
 import { Leaf, Zap, ShieldCheck, Activity, EyeOff, Eye, Chrome, ArrowRight } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { api } from '../services/api';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('demo@renewguard.io');
   const [password, setPassword] = useState('password123');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate authentication
-    localStorage.setItem('auth_token', 'mock_token');
-    // Force a full browser navigation to root to ensure App.tsx picks up the token
-    window.location.href = '/';
+    setError(null);
+    setLoading(true);
+    try {
+      const data = await api.login(email, password);
+      localStorage.setItem('auth_token', data.access_token);
+      localStorage.setItem('current_user', JSON.stringify(data.user));
+      window.location.href = '/';
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -88,7 +99,7 @@ export const Login: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email address"
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-black text-sm placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-black focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   required
                 />
                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-sm border border-slate-400 text-slate-400 flex items-center justify-center text-[10px] font-bold">@</div>
@@ -103,7 +114,7 @@ export const Login: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-slate-200 bg-slate-50 text-black text-sm placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-black focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   required
                 />
                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-sm border-2 border-slate-400 border-t-0 border-x-0 rounded-t-full mt-[-2px]"></div>
@@ -129,10 +140,15 @@ export const Login: React.FC = () => {
 
           <button 
             type="submit"
-            className="w-full py-3.5 mt-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow-xl shadow-emerald-900/10 transition-all flex items-center justify-center gap-2"
+            disabled={loading}
+            className="w-full py-3.5 mt-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm shadow-xl shadow-emerald-900/10 transition-all flex items-center justify-center gap-2"
           >
-            Sign In <ArrowRight className="w-4 h-4" />
+            {loading ? 'Signing in…' : <> Sign In <ArrowRight className="w-4 h-4" /></>}
           </button>
+
+          {error && (
+            <p className="mt-3 text-xs font-bold text-rose-600 text-center">{error}</p>
+          )}
         </form>
 
         <div className="mt-6 flex items-center gap-4">

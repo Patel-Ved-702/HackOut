@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ShieldAlert, Bell, AlertTriangle, AlertCircle, Eye, CheckCircle, Search, Wind, Thermometer, Activity, Zap, TrendingDown, Clock, Info, BrainCircuit, LineChart as LineChartIcon } from 'lucide-react';
+import { ShieldAlert, Bell, AlertTriangle, AlertCircle, Eye, CheckCircle, Search, Wind, Thermometer, Activity, Zap, TrendingDown, Clock, Info, BrainCircuit, LineChart as LineChartIcon, Wrench, X, Loader2 } from 'lucide-react';
 import { api } from '../services/api';
 import { Alert } from '../types';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
@@ -12,6 +12,13 @@ export const Alerts: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'All' | 'Critical' | 'High Risk' | 'Watch' | 'Acknowledged' | 'Closed'>('All');
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
+
+  // Quick Task Creation Modal state
+  const [taskModalAlert, setTaskModalAlert] = useState<Alert | null>(null);
+  const [taskPriority, setTaskPriority] = useState<'URGENT' | 'HIGH' | 'MEDIUM'>('HIGH');
+  const [taskNotes, setTaskNotes] = useState('');
+  const [isSubmittingTask, setIsSubmittingTask] = useState(false);
+  const [taskSuccess, setTaskSuccess] = useState<string | null>(null);
 
   const fetchAlerts = async () => {
     try {
@@ -43,6 +50,38 @@ export const Alerts: React.FC = () => {
     }
   };
 
+  const handleOpenTaskModal = (al: Alert, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTaskModalAlert(al);
+    setTaskPriority(al.severity === 'CRITICAL' ? 'URGENT' : 'HIGH');
+    setTaskNotes(`Anomaly investigation: ${al.message}`);
+  };
+
+  const handleCreateTaskFromAlert = async () => {
+    if (!taskModalAlert) return;
+    setIsSubmittingTask(true);
+    try {
+      await api.createTask({
+        asset_id: taskModalAlert.asset_id,
+        assigned_to: 2, // Alex Technician
+        priority: taskPriority,
+        notes: `[Dispatched from Alert #${taskModalAlert.id}] ${taskModalAlert.title}\n${taskNotes}`
+      });
+      try {
+        await api.updateAlert(taskModalAlert.id, 'acknowledge');
+      } catch (e) {}
+
+      setTaskSuccess(`Work order ticket dispatched to Alex Technician!`);
+      setTimeout(() => setTaskSuccess(null), 6000);
+      setTaskModalAlert(null);
+      fetchAlerts();
+    } catch (err: any) {
+      alert(`Failed to create task: ${err.message}`);
+    } finally {
+      setIsSubmittingTask(false);
+    }
+  };
+
   const sparkData = [{v: 5}, {v: 8}, {v: 6}, {v: 10}, {v: 15}, {v: 12}];
 
   return (
@@ -58,6 +97,19 @@ export const Alerts: React.FC = () => {
           <p className="text-sm font-medium text-slate-500 mt-1">Review persistent abnormal behaviour and operational risk.</p>
         </div>
       </div>
+
+      {/* Task Creation Success Toast */}
+      {taskSuccess && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 px-4 py-3 rounded-2xl flex items-center justify-between text-sm font-bold shadow-sm animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{taskSuccess}</span>
+          </div>
+          <button onClick={() => setTaskSuccess(null)} className="text-emerald-600 hover:text-emerald-800">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       <div className="flex flex-col lg:flex-row gap-6 relative">
         
@@ -211,18 +263,8 @@ export const Alerts: React.FC = () => {
                               </button>
                             )}
                             <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                api.createTask({
-                                  asset_id: al.asset?.id || al.asset_id,
-                                  priority: al.severity === 'CRITICAL' ? 'CRITICAL' : 'HIGH',
-                                  notes: `Generated from Alert: ${al.title}`
-                                }).then(() => {
-                                  alert('Task successfully created!');
-                                  navigate('/maintenance');
-                                }).catch(err => alert('Failed to create task: ' + err.message));
-                              }}
-                              className="w-28 px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold uppercase tracking-widest text-center hover:bg-emerald-100 transition-colors"
+                              onClick={(e) => handleOpenTaskModal(al, e)}
+                              className="w-28 px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold uppercase tracking-widest text-center hover:bg-emerald-100 transition-colors cursor-pointer"
                             >
                               Create Task
                             </button>
@@ -332,7 +374,10 @@ export const Alerts: React.FC = () => {
                 >
                   Acknowledge & Mute
                 </button>
-                <button className="w-full py-3.5 rounded-xl bg-emerald-700 text-white font-bold text-sm hover:bg-emerald-800 transition-colors shadow-lg shadow-emerald-900/10">
+                <button 
+                  onClick={() => navigate(`/maintenance?asset_id=${selectedAlert.asset_id}`)}
+                  className="w-full py-3.5 rounded-xl bg-emerald-700 text-white font-bold text-sm hover:bg-emerald-800 transition-colors shadow-lg shadow-emerald-900/10 cursor-pointer flex items-center justify-center gap-2"
+                >
                   Generate Work Order
                 </button>
                 <button 
@@ -348,6 +393,123 @@ export const Alerts: React.FC = () => {
         )}
 
       </div>
+
+      {/* Quick Task Creation Modal */}
+      {taskModalAlert && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5 animate-scaleUp">
+            
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700">
+                  <Wrench className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900">Create Maintenance Task</h3>
+                  <p className="text-xs font-semibold text-slate-500">
+                    Dispatch work order for <span className="text-slate-900 font-mono font-bold">{taskModalAlert.asset?.asset_code || 'Asset'}</span>
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setTaskModalAlert(null)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-sm">
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">Triggering Alert</div>
+                <div className="font-bold text-slate-900 text-xs">{taskModalAlert.title}</div>
+                <div className="text-xs text-slate-500">{taskModalAlert.message}</div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                  Priority Level
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['URGENT', 'HIGH', 'MEDIUM'] as const).map(p => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setTaskPriority(p)}
+                      className={`py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                        taskPriority === p 
+                          ? 'bg-slate-900 text-white border-slate-900 shadow-sm' 
+                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                  Assign Technician
+                </label>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs font-bold text-slate-800">
+                  <span>Alex Technician (Field Engineer)</span>
+                  <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">AVAILABLE</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                  Task Instructions / Notes
+                </label>
+                <textarea
+                  rows={3}
+                  value={taskNotes}
+                  onChange={e => setTaskNotes(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  placeholder="Specific inspection or repair instructions..."
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const id = taskModalAlert.asset_id;
+                    setTaskModalAlert(null);
+                    navigate(`/maintenance?asset_id=${id}`);
+                  }}
+                  className="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  Open in Decision Center (Full Queue) &rarr;
+                </button>
+
+                <div className="flex items-center gap-2 self-end">
+                  <button
+                    type="button"
+                    onClick={() => setTaskModalAlert(null)}
+                    className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200 transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isSubmittingTask}
+                    onClick={handleCreateTaskFromAlert}
+                    className="px-5 py-2 rounded-xl bg-emerald-700 text-white font-bold text-xs hover:bg-emerald-800 disabled:opacity-50 transition-colors shadow-md shadow-emerald-900/10 flex items-center gap-2 cursor-pointer"
+                  >
+                    {isSubmittingTask ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wrench className="w-3.5 h-3.5" />}
+                    Dispatch Task
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

@@ -207,7 +207,13 @@ export const Dashboard: React.FC = () => {
                 <div className="text-xs text-slate-700 font-medium leading-relaxed mb-3">
                   {asset.why_flagged || 'Degradation detected'}
                 </div>
-                <button className={`w-full py-2 rounded-lg bg-white border text-xs font-bold shadow-sm transition-colors flex items-center justify-center gap-2 ${asset.risk_level === 'CRITICAL' ? 'border-rose-200 text-rose-700 hover:bg-rose-50 group-hover:bg-rose-600 group-hover:text-white group-hover:border-rose-600' : 'border-amber-200 text-amber-700 hover:bg-amber-50 group-hover:bg-amber-500 group-hover:text-white group-hover:border-amber-500'}`}>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/maintenance?asset_id=${asset.asset_id}`);
+                  }}
+                  className={`w-full py-2 rounded-lg bg-white border text-xs font-bold shadow-sm transition-colors flex items-center justify-center gap-2 ${asset.risk_level === 'CRITICAL' ? 'border-rose-200 text-rose-700 hover:bg-rose-50 group-hover:bg-rose-600 group-hover:text-white group-hover:border-rose-600' : 'border-amber-200 text-amber-700 hover:bg-amber-50 group-hover:bg-amber-500 group-hover:text-white group-hover:border-amber-500'}`}
+                >
                   Create Work Order <ArrowRight className="w-3 h-3" />
                 </button>
               </div>

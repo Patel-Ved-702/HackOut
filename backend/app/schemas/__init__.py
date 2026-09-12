@@ -177,6 +177,12 @@ class PriorityQueueItem(BaseModel):
     active_alerts_count: int
     why_flagged: Optional[str] = None
     top_evidence: Optional[List[Dict[str, Any]]] = None
+    expected_output_kw: Optional[float] = None
+    observed_output_kw: Optional[float] = None
+    generation_loss_kw: Optional[float] = None
+    energy_price: Optional[float] = None
+    currency: Optional[str] = "$"
+    data_quality_status: Optional[str] = "NORMAL"
 
 # --- Alert Schemas ---
 class AlertBase(BaseModel):

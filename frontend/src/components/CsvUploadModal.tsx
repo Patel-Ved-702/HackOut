@@ -14,6 +14,7 @@ export const CsvUploadModal: React.FC<CsvUploadModalProps> = ({ isOpen, onClose,
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<any | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   if (!isOpen) return null;
 
@@ -22,6 +23,34 @@ export const CsvUploadModal: React.FC<CsvUploadModalProps> = ({ isOpen, onClose,
       setFile(e.target.files[0]);
       setError(null);
       setResult(null);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const droppedFile = e.dataTransfer.files[0];
+      if (droppedFile.name.endsWith('.csv') || droppedFile.type === 'text/csv' || droppedFile.type === 'application/vnd.ms-excel') {
+        setFile(droppedFile);
+        setError(null);
+        setResult(null);
+      } else {
+        setError('Please drop a valid .csv file');
+      }
     }
   };
 
@@ -87,9 +116,21 @@ export const CsvUploadModal: React.FC<CsvUploadModalProps> = ({ isOpen, onClose,
         {/* Upload Zone */}
         {!result && (
           <div className="space-y-4 pt-2">
-            <label className="border-2 border-dashed border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all bg-slate-50">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100">
-                <UploadCloud className="w-6 h-6 text-slate-400" />
+            <label 
+              onDragOver={handleDragOver}
+              onDragEnter={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all ${
+                isDragging 
+                  ? 'border-emerald-500 bg-emerald-100/50 scale-[1.01] ring-4 ring-emerald-500/20' 
+                  : 'border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 bg-slate-50'
+              }`}
+            >
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm border transition-colors ${
+                isDragging ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white border-slate-100 text-slate-400'
+              }`}>
+                <UploadCloud className="w-6 h-6" />
               </div>
               <div className="text-sm text-slate-600 text-center">
                 <span className="font-bold text-emerald-600">Click to select CSV</span> or drag and drop

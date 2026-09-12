@@ -90,7 +90,7 @@ export const api = {
   },
 
   // Maintenance
-  getPriorities: async (scope: 'all' | 'reporting' = 'reporting'): Promise<PriorityQueueItem[]> => {
+  getPriorities: async (scope: 'all' | 'reporting' = 'all'): Promise<PriorityQueueItem[]> => {
     const res = await fetch(`${API_BASE}/maintenance/priorities?scope=${scope}`);
     if (!res.ok) throw new Error('Failed to fetch maintenance priorities');
     return res.json();
@@ -137,6 +137,14 @@ export const api = {
       method: 'POST',
     });
     if (!res.ok) throw new Error('Failed to reset simulation');
+    return res.json();
+  },
+
+  simulateReading: async (assetId: number, mode: 'normal' | 'degrade' | 'spike' | 'reset' = 'normal'): Promise<any> => {
+    const res = await fetch(`${API_BASE}/simulator/simulate-reading?asset_id=${assetId}&mode=${mode}`, {
+      method: 'POST',
+    });
+    if (!res.ok) throw new Error('Failed to simulate reading');
     return res.json();
   },
 
