@@ -1,7 +1,7 @@
 # RenewGuard AI ⚡
 ### AI-Powered Predictive Maintenance for Solar & Wind Assets
 *Built for HackOut'26 — Grounded Operational Intelligence (Zero Hallucination)*
-
+      
 ---
 
 ## 🌟 Overview
