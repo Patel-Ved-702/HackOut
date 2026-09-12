@@ -132,7 +132,6 @@ export const Assets: React.FC = () => {
                 <StatusBadge status={asset.status || asset.health_status || 'HEALTHY'} />
               </div>
               
-              <div className="absolute top-6 right-6 text-[10px] font-black text-slate-400 tracking-widest uppercase">{asset.site_name}</div>
               <h3 className="text-lg font-black text-slate-900 mb-1">{asset.asset_code}</h3>
               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">
                 {asset.site_name || asset.location || `Site #${asset.site_id}`}

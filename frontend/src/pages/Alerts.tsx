@@ -202,6 +202,10 @@ export const Alerts: React.FC = () => {
                               Acknowledge
                             </button>
                             <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/maintenance?asset_id=${al.asset_id}`);
+                              }}
                               className="w-28 px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold uppercase tracking-widest text-center hover:bg-emerald-100 transition-colors"
                             >
                               Create Task
@@ -312,7 +316,10 @@ export const Alerts: React.FC = () => {
                 >
                   Acknowledge & Mute
                 </button>
-                <button className="w-full py-3.5 rounded-xl bg-emerald-700 text-white font-bold text-sm hover:bg-emerald-800 transition-colors shadow-lg shadow-emerald-900/10">
+                <button 
+                  onClick={() => navigate(`/maintenance?asset_id=${selectedAlert.asset_id}`)}
+                  className="w-full py-3.5 rounded-xl bg-emerald-700 text-white font-bold text-sm hover:bg-emerald-800 transition-colors shadow-lg shadow-emerald-900/10 cursor-pointer flex items-center justify-center gap-2"
+                >
                   Generate Work Order
                 </button>
                 <button 

@@ -3,6 +3,7 @@ import io
 import csv
 import uuid
 import time
+import random
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File, Response
 from sqlalchemy.orm import Session
@@ -596,6 +597,17 @@ def get_maintenance_priorities(
         top_ev = (hp.explanation or [])[:3] if (hp and hp.explanation) else []
         why_text = top_ev[0].get("description") if top_ev else "Nominal telemetry baseline"
 
+        # Explicit data quality determination
+        data_quality_status = "NORMAL"
+        if not lr:
+            data_quality_status = "MISSING READINGS"
+        elif not hp:
+            data_quality_status = "AI PREDICTION UNAVAILABLE"
+        elif lr.dataset_status:
+            data_quality_status = lr.dataset_status.upper()
+        elif a.status == "DATA_STALE":
+            data_quality_status = "DATA STALE"
+
         summaries.append({
             "asset_id": a.id,
             "asset_code": a.asset_code,
@@ -608,7 +620,13 @@ def get_maintenance_priorities(
             "estimated_revenue_loss_daily": impact["estimated_daily_revenue_loss"],
             "active_alerts_count": alerts_count,
             "why_flagged": why_text,
-            "top_evidence": top_ev
+            "top_evidence": top_ev,
+            "expected_output_kw": impact["expected_output_kw"],
+            "observed_output_kw": impact["observed_output_kw"],
+            "generation_loss_kw": impact["generation_loss_kw"],
+            "energy_price": impact["energy_price"],
+            "currency": curr,
+            "data_quality_status": data_quality_status
         })
 
     return priority_service.rank_assets(summaries)
@@ -792,6 +810,111 @@ def reset_asset_demo(
         al.status = "resolved"
     db.commit()
     return {"message": f"Asset {asset_code} reset to healthy baseline", "asset_code": asset.asset_code, "result": result}
+
+@router.post("/simulator/simulate-reading")
+def simulate_reading_for_asset(
+    asset_id: Optional[int] = Query(None),
+    asset_code: Optional[str] = Query(None),
+    mode: str = Query("normal", pattern="^(normal|degrade|spike|reset)$"),
+    db: Session = Depends(get_db)
+):
+    """
+    Simulates a live telemetry reading for any asset (wind turbine or solar panel),
+    triggering the real ML anomaly detection and health prediction pipeline.
+    """
+    asset = None
+    if asset_id:
+        asset = db.query(Asset).filter(Asset.id == asset_id).first()
+    elif asset_code:
+        asset = db.query(Asset).filter(Asset.asset_code == asset_code).first()
+
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+
+    is_solar = asset.asset_type == "solar_inverter" or "SP" in asset.asset_code
+    cap = asset.rated_capacity if asset.rated_capacity and asset.rated_capacity > 0 else (100.0 if not is_solar else 120.0)
+
+    if mode == "reset":
+        if is_solar:
+            temp = 38.2
+            vib = 0.15
+            curr = 28.0
+            power = round(cap * 0.92, 1)
+            exp = cap
+        else:
+            temp = 48.5
+            vib = 2.1
+            curr = 38.0
+            power = round(cap * 0.91, 1)
+            exp = cap
+
+        # Update asset status
+        asset.status = "HEALTHY"
+        for al in asset.alerts:
+            al.status = "resolved"
+        db.commit()
+
+    elif mode in ["degrade", "spike"]:
+        if is_solar:
+            # Overheating / inverter anomaly
+            temp = round(57.0 + random.uniform(2.0, 7.0), 1)
+            vib = round(1.6 + random.uniform(0.3, 0.9), 2)
+            curr = round(20.5 + random.uniform(-2.0, 1.0), 1)
+            exp = cap
+            power = round(exp * random.uniform(0.55, 0.70), 1)
+        else:
+            # Mechanical bearing degradation / gearbox heat
+            temp = round(66.0 + random.uniform(2.0, 7.0), 1)
+            vib = round(6.5 + random.uniform(0.5, 1.8), 2)
+            curr = round(34.5 + random.uniform(-1.0, 1.0), 1)
+            exp = cap
+            power = round(exp * random.uniform(0.58, 0.72), 1)
+
+    else: # normal mode with realistic live telemetry drift
+        if is_solar:
+            temp = round(38.0 + random.uniform(-1.2, 1.2), 1)
+            vib = round(0.18 + random.uniform(-0.04, 0.04), 2)
+            curr = round(28.0 + random.uniform(-0.9, 0.9), 1)
+            exp = cap
+            power = round(exp * random.uniform(0.88, 0.95), 1)
+        else:
+            temp = round(48.5 + random.uniform(-0.8, 0.8), 1)
+            vib = round(2.1 + random.uniform(-0.15, 0.15), 2)
+            curr = round(38.0 + random.uniform(-1.0, 1.0), 1)
+            exp = cap
+            power = round(exp * random.uniform(0.89, 0.94), 1)
+
+    reading = SensorReadingCreate(
+        asset_id=asset.id,
+        asset_code=asset.asset_code,
+        temperature=temp,
+        vibration=vib,
+        current=curr,
+        power_output=power,
+        expected_power=exp,
+        voltage=round(410.0 + random.uniform(-3.0, 3.0), 1),
+        wind_speed=round(random.uniform(7.0, 9.0), 1) if not is_solar else None,
+        wind_direction=round(random.uniform(180.0, 200.0), 1) if not is_solar else None,
+        humidity=round(55.0 + random.uniform(-5.0, 5.0), 1),
+        timestamp=datetime.datetime.utcnow()
+    )
+
+    result = ingest_sensor_reading(reading, db)
+    return {
+        "message": f"Simulated {mode} reading generated for {asset.asset_code}",
+        "asset_code": asset.asset_code,
+        "asset_id": asset.id,
+        "mode": mode,
+        "reading": {
+            "temperature": temp,
+            "vibration": vib,
+            "current": curr,
+            "power_output": power,
+            "expected_power": exp,
+            "timestamp": reading.timestamp.isoformat()
+        },
+        "result": result
+    }
 
 # --- CSV Batch Telemetry Ingestion & Analysis ---
 @router.post("/sensors/upload-csv", response_model=CsvUploadResponseOut)

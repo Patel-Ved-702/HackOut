@@ -140,6 +140,14 @@ export const api = {
     return res.json();
   },
 
+  simulateReading: async (assetId: number, mode: 'normal' | 'degrade' | 'spike' | 'reset' = 'normal'): Promise<any> => {
+    const res = await fetch(`${API_BASE}/simulator/simulate-reading?asset_id=${assetId}&mode=${mode}`, {
+      method: 'POST',
+    });
+    if (!res.ok) throw new Error('Failed to simulate reading');
+    return res.json();
+  },
+
   // CSV Batch Upload & Ingestion
   uploadCsv: async (file: File): Promise<any> => {
     const formData = new FormData();

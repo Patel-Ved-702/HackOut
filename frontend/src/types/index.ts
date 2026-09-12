@@ -86,6 +86,12 @@ export interface PriorityQueueItem {
   active_alerts_count: number;
   why_flagged?: string;
   top_evidence?: EvidenceItem[];
+  expected_output_kw?: number;
+  observed_output_kw?: number;
+  generation_loss_kw?: number;
+  energy_price?: number;
+  currency?: string;
+  data_quality_status?: string;
 }
 
 export interface Alert {
