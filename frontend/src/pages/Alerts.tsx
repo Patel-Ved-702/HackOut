@@ -195,13 +195,33 @@ export const Alerts: React.FC = () => {
                         </td>
                         <td className="px-5 py-4 text-right">
                           <div className="flex flex-col gap-1.5 items-end">
+                            {al.status === 'acknowledged' ? (
+                              <button 
+                                disabled
+                                className="w-28 px-3 py-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-bold uppercase tracking-widest text-center opacity-70 cursor-not-allowed"
+                              >
+                                Acknowledged
+                              </button>
+                            ) : (
+                              <button 
+                                onClick={(e) => handleAction(al.id, 'acknowledge', e)}
+                                className="w-28 px-3 py-2 rounded-xl bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold uppercase tracking-widest text-center hover:bg-slate-200 transition-colors"
+                              >
+                                Acknowledge
+                              </button>
+                            )}
                             <button 
-                              onClick={(e) => handleAction(al.id, 'acknowledge', e)}
-                              className="w-28 px-3 py-2 rounded-xl bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold uppercase tracking-widest text-center hover:bg-slate-200 transition-colors"
-                            >
-                              Acknowledge
-                            </button>
-                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                api.createTask({
+                                  asset_id: al.asset?.id || al.asset_id,
+                                  priority: al.severity === 'CRITICAL' ? 'CRITICAL' : 'HIGH',
+                                  notes: `Generated from Alert: ${al.title}`
+                                }).then(() => {
+                                  alert('Task successfully created!');
+                                  navigate('/maintenance');
+                                }).catch(err => alert('Failed to create task: ' + err.message));
+                              }}
                               className="w-28 px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold uppercase tracking-widest text-center hover:bg-emerald-100 transition-colors"
                             >
                               Create Task
