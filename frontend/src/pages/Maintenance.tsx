@@ -30,7 +30,7 @@ export const Maintenance: React.FC = () => {
   const fetchData = async () => {
     try {
       const [pData, tData] = await Promise.all([
-        api.getPriorities(),
+        api.getPriorities('all'),
         api.getTasks()
       ]);
       setPriorities(pData);
@@ -39,11 +39,43 @@ export const Maintenance: React.FC = () => {
       // If asset_id is provided in URL query, select that asset
       const targetAssetIdStr = searchParams.get('asset_id');
       if (targetAssetIdStr) {
-        const found = pData.find(p => p.asset_id === Number(targetAssetIdStr));
+        const targetId = Number(targetAssetIdStr);
+        const found = pData.find(p => p.asset_id === targetId);
         if (found) {
           setSelectedAsset(found);
-        } else if (pData.length > 0 && !selectedAsset) {
-          setSelectedAsset(pData[0]);
+        } else {
+          // Fallback: fetch detail directly for this asset
+          try {
+            const detail = await api.getAssetDetail(targetId);
+            if (detail) {
+              const synthetic: PriorityQueueItem = {
+                rank: pData.length + 1,
+                priority_score: 50,
+                asset_id: detail.id,
+                asset_code: detail.asset_code,
+                asset_type: detail.asset_type,
+                site_name: detail.site_name || '',
+                health_score: detail.health_score || 100,
+                risk_level: detail.status || 'HEALTHY',
+                rated_capacity: detail.rated_capacity || 100,
+                persistence_hours: 0,
+                estimated_revenue_loss_daily: detail.impact?.estimated_daily_revenue_loss || 0,
+                active_alerts_count: 1,
+                why_flagged: 'Operational work order dispatch requested from alert triage',
+                recommended_action: 'Conduct prioritized on-site inspection and sensor verification',
+                top_evidence: [],
+                expected_output_kw: detail.impact?.expected_output_kw || detail.rated_capacity || 100,
+                observed_output_kw: detail.impact?.observed_output_kw || 100,
+                generation_loss_kw: detail.impact?.generation_loss_kw || 0,
+                energy_price: detail.impact?.energy_price || 0.12,
+                currency: detail.impact?.currency || '$',
+                data_quality_status: 'NORMAL'
+              };
+              setSelectedAsset(synthetic);
+            }
+          } catch (e) {
+            console.error('Failed to load asset detail fallback', e);
+          }
         }
       } else if (pData.length > 0 && !selectedAsset) {
         setSelectedAsset(pData[0]);
@@ -185,6 +217,31 @@ export const Maintenance: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* Target Asset Active Banner */}
+      {searchParams.get('asset_id') && selectedAsset && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm animate-fadeIn">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-emerald-700 text-white shadow-md shadow-emerald-900/10">
+              <Wrench className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                Work Order Target: <span className="font-mono text-emerald-800">{selectedAsset.asset_code}</span>
+                <span className="text-xs text-slate-500 font-normal">({selectedAsset.site_name || 'Fleet Site'})</span>
+              </h4>
+              <p className="text-xs text-slate-600 font-medium">
+                Pre-selected from alert triage. Review diagnostic evidence below and dispatch the work order to field technician.
+              </p>
+            </div>
+          </div>
+          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shrink-0 ${
+            selectedAsset.risk_level === 'CRITICAL' ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-amber-50 text-amber-700 border-amber-200'
+          }`}>
+            {selectedAsset.risk_level}
+          </span>
+        </div>
+      )}
 
       {/* 1. PRIORITY OVERVIEW (Live metrics from API/State, no hardcoding) */}
       <div>

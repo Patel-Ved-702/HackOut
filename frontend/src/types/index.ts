@@ -92,6 +92,7 @@ export interface PriorityQueueItem {
   energy_price?: number;
   currency?: string;
   data_quality_status?: string;
+  rated_capacity?: number;
 }
 
 export interface Alert {
