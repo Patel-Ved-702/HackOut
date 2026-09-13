@@ -69,7 +69,7 @@ export const Alerts: React.FC = () => {
       });
       try {
         await api.updateAlert(taskModalAlert.id, 'acknowledge');
-      } catch (e) {}
+      } catch (e) { }
 
       setTaskSuccess(`Work order ticket dispatched to Alex Technician!`);
       setTimeout(() => setTaskSuccess(null), 6000);
@@ -82,11 +82,11 @@ export const Alerts: React.FC = () => {
     }
   };
 
-  const sparkData = [{v: 5}, {v: 8}, {v: 6}, {v: 10}, {v: 15}, {v: 12}];
+  const sparkData = [{ v: 5 }, { v: 8 }, { v: 6 }, { v: 10 }, { v: 15 }, { v: 12 }];
 
   return (
     <div className="max-w-[1400px] mx-auto pb-12 space-y-6">
-      
+
       {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
         <div>
@@ -112,10 +112,10 @@ export const Alerts: React.FC = () => {
       )}
 
       <div className="flex flex-col lg:flex-row gap-6 relative">
-        
+
         {/* Main Content (Left) */}
         <div className={`flex-1 space-y-6 ${selectedAlert ? 'lg:w-2/3' : 'w-full'} transition-all duration-300`}>
-          
+
           {/* Top Summary Cards */}
           <div>
             <h3 className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-3">Threat Summary</h3>
@@ -173,9 +173,8 @@ export const Alerts: React.FC = () => {
                 <button
                   key={f}
                   onClick={() => setFilter(f as any)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                    filter === f ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100'
-                  }`}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filter === f ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
                 >
                   {f}
                 </button>
@@ -209,22 +208,21 @@ export const Alerts: React.FC = () => {
                   {alerts.length > 0 ? alerts.map((al) => {
                     const isCritical = al.severity === 'CRITICAL';
                     return (
-                      <tr 
-                        key={al.id} 
+                      <tr
+                        key={al.id}
                         onClick={() => setSelectedAlert(al)}
                         className={`hover:bg-slate-50 cursor-pointer transition-colors ${selectedAlert?.id === al.id ? 'bg-slate-50 border-l-[6px] border-l-emerald-500' : 'border-l-[6px] border-l-transparent'}`}
                       >
                         <td className="px-5 py-4">
-                          <div className={`inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest mb-1.5 ${
-                            isCritical ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-amber-50 text-amber-600 border border-amber-200'
-                          }`}>
+                          <div className={`inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest mb-1.5 ${isCritical ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-amber-50 text-amber-600 border border-amber-200'
+                            }`}>
                             {isCritical ? 'Critical' : 'High Risk'}
                           </div>
                           <div className="font-mono font-black text-slate-900 mb-1">{al.asset?.asset_code || al.title.split(' ')[0]}</div>
                           <div className="text-xs text-slate-500 font-medium">{al.message}</div>
                         </td>
                         <td className="px-5 py-4 text-slate-600 font-mono font-bold text-xs">
-                          {new Date(al.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          {new Date(al.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </td>
                         <td className="px-5 py-4 text-slate-700 font-bold text-xs">
                           {al.persistence_count * 5} min
@@ -247,13 +245,22 @@ export const Alerts: React.FC = () => {
                         </td>
                         <td className="px-5 py-4 text-right">
                           <div className="flex flex-col gap-1.5 items-end">
-                            <button 
-                              onClick={(e) => handleAction(al.id, 'acknowledge', e)}
-                              className="w-28 px-3 py-2 rounded-xl bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold uppercase tracking-widest text-center hover:bg-slate-200 transition-colors"
-                            >
-                              Acknowledge
-                            </button>
-                            <button 
+                            {al.status === 'acknowledged' ? (
+                              <button
+                                disabled
+                                className="w-28 px-3 py-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-bold uppercase tracking-widest text-center opacity-70 cursor-not-allowed"
+                              >
+                                Acknowledged
+                              </button>
+                            ) : (
+                              <button
+                                onClick={(e) => handleAction(al.id, 'acknowledge', e)}
+                                className="w-28 px-3 py-2 rounded-xl bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold uppercase tracking-widest text-center hover:bg-slate-200 transition-colors"
+                              >
+                                Acknowledge
+                              </button>
+                            )}
+                            <button
                               onClick={(e) => handleOpenTaskModal(al, e)}
                               className="w-28 px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold uppercase tracking-widest text-center hover:bg-emerald-100 transition-colors cursor-pointer"
                             >
@@ -313,15 +320,14 @@ export const Alerts: React.FC = () => {
             <h3 className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-3">Incident Report</h3>
             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xl sticky top-24 relative overflow-hidden">
               <div className={`absolute top-0 left-0 w-full h-2 ${selectedAlert.severity === 'CRITICAL' ? 'bg-rose-500' : 'bg-amber-500'}`}></div>
-              
+
               <h2 className="text-2xl font-black text-slate-900 mb-6">Alert Profile</h2>
-              
+
               <div className="space-y-4 text-sm mb-8">
                 <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Severity</span>
-                  <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border ${
-                    selectedAlert.severity === 'CRITICAL' ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-amber-50 text-amber-600 border-amber-200'
-                  }`}>
+                  <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border ${selectedAlert.severity === 'CRITICAL' ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-amber-50 text-amber-600 border-amber-200'
+                    }`}>
                     {selectedAlert.severity}
                   </span>
                 </div>
@@ -331,7 +337,7 @@ export const Alerts: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Time Registered</span>
-                  <span className="font-mono font-bold text-slate-700">{new Date(selectedAlert.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                  <span className="font-mono font-bold text-slate-700">{new Date(selectedAlert.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
                 <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Persistence</span>
@@ -359,19 +365,19 @@ export const Alerts: React.FC = () => {
               </div>
 
               <div className="flex flex-col gap-3">
-                <button 
+                <button
                   onClick={(e) => handleAction(selectedAlert.id, 'acknowledge', e)}
                   className="w-full py-3.5 rounded-xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 transition-colors shadow-lg"
                 >
                   Acknowledge & Mute
                 </button>
-                <button 
+                <button
                   onClick={() => navigate(`/maintenance?asset_id=${selectedAlert.asset_id}`)}
                   className="w-full py-3.5 rounded-xl bg-emerald-700 text-white font-bold text-sm hover:bg-emerald-800 transition-colors shadow-lg shadow-emerald-900/10 cursor-pointer flex items-center justify-center gap-2"
                 >
                   Generate Work Order
                 </button>
-                <button 
+                <button
                   onClick={() => navigate(`/assets/${selectedAlert.asset_id}`)}
                   className="w-full py-3.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 transition-colors shadow-sm"
                 >
@@ -389,7 +395,6 @@ export const Alerts: React.FC = () => {
       {taskModalAlert && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5 animate-scaleUp">
-            
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700">
